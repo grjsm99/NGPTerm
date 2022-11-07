@@ -43,9 +43,8 @@ struct SC_WORLD_DATA { // type = 0
 	char type = 0;
 	UCHAR player_count;  // 현재 월드 내의 플레이어 수
 	USHORT my_client_id; // 자신이 부여받을 클라이언트 id
-	UCHAR missile_count; // 현재 월드 내의 미사일의 개수
-	// 이후 player_count값 만큼 SC_ADD_PLAYER를 보내고,
-	// missile_count값 만큼 SC_ADD_MISSILE을 보낸다.
+
+	// 이후 player_count값 만큼 SC_ADD_PLAYER를 보낸다.
 };
 struct SC_ADD_PLAYER { // type = 1
 	char type = 1;
