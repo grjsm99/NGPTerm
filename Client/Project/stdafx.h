@@ -42,6 +42,9 @@
 // com_error 디버그용
 #include <comdef.h>
 
+// 서버와의 패킷 규약
+#include "../../protocol.h"
+
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
