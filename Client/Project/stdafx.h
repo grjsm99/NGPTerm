@@ -73,6 +73,8 @@
 #include <numeric>
 #include <algorithm>
 
+#include "../../protocol.h"
+
 using namespace std;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -81,10 +83,12 @@ extern UINT gnCbvSrvDescriptorIncrementSize;
 extern UINT	gnRtvDescriptorIncrementSize;
 extern UINT gnDsvDescriptorIncrementSize;
 
-
-
 using Microsoft::WRL::ComPtr;
 
+// 네트워크 전역 변수
+SOCKET serverSock;
+CRITICAL_SECTION missileCS;
+CRITICAL_SECTION playerCS;
 
 // float 난수 생성
 float random(float min, float max);
