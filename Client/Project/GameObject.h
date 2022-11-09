@@ -195,7 +195,7 @@ public:
 	virtual ~Missile();
 
 public:
-	void Create(XMFLOAT3 _position, XMFLOAT4 _rotate, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
+	void Create(USHORT _cid, UINT _mid, XMFLOAT3 _position, XMFLOAT4 _rotate, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	bool CheckRemove() const;
 	virtual void Animate(double _timeElapsed);
 	virtual void CopyObject(const GameObject& _other);

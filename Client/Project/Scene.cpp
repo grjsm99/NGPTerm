@@ -20,10 +20,10 @@ void Scene::CheckCollision() {
 ///////////////////////////////////////////////////////////////////////////////
 /// PlayScene
 PlayScene::PlayScene(int _stageNum) {
-
-	nStage = _stageNum;
 	globalAmbient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
-	drawHitBoxToggle = true;
+	keybufferTime = 0;
+	playerHP = 100;
+	missileCount = 0;
 }
 
 void PlayScene::Init(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
@@ -102,29 +102,16 @@ void PlayScene::ProcessKeyboardInput(const array<UCHAR, 256>& _keysBuffers, floa
 		pPlayer->MoveUpRigid(false, _timeElapsed);
 	}
 	if (_keysBuffers['P'] & 0xF0) {
-		if (pMissiles.size() < 50)
-			pPlayer->FireMissile(pMissiles, _pDevice, _pCommandList);
-		
-		
-	}
-	if (_keysBuffers['O'] & 0xF0) {
-		if (keybufferTime < 0.0f) {
-			drawHitBoxToggle = !drawHitBoxToggle;
-			keybufferTime = 0.5f;
-		}
-		
+		pPlayer->FireMissile(missileCount, pMissiles, _pDevice, _pCommandList);
 	}
 	//pPlayers[0]->ApplyTransform(transform, false);
-	
-
 }
 
 void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 
 	if (pPlayer->GetIsDead()) return;
 	keybufferTime -= _timeElapsed;
-	spawnTime -= _timeElapsed;
-	
+
 	// 플레이어가 살아있는 경우 애니메이션을 수행
 	if (!pPlayer->GetIsDead()) {
 		pPlayer->Animate(_timeElapsed);
@@ -150,8 +137,6 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 }
 
 void PlayScene::CheckCollision() {
-	
-	
 	
 	pMissiles.remove_if([](const shared_ptr<GameObject>& _pMissile) {
 		return _pMissile->CheckRemove();
@@ -223,7 +208,6 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	
 	Mesh::GetShader()->PrepareRender(_pCommandList);
 	pPlayer->Render(_pCommandList);	
-
 	
 	for (auto& pMissile : pMissiles) {
 		if (pMissile) pMissile->Render(_pCommandList);
@@ -238,19 +222,6 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 
 	SkyBoxMesh::GetShader()->PrepareRender(_pCommandList);
 	pSkyBox->Render(_pCommandList, camera);
-
-
-	if (drawHitBoxToggle) {
-		HitBoxMesh::GetShader()->PrepareRender(_pCommandList);
-		HitBoxMesh& hitBoxMesh = GameFramework::Instance().GetMeshManager().GetHitBoxMesh();
-		pPlayer->RenderHitBox(_pCommandList, hitBoxMesh);
-		for (auto pEnemy : pEnemys) {
-			if (pEnemy) pEnemy->RenderHitBox(_pCommandList, hitBoxMesh);
-		}
-		for (auto pMissile : pMissiles) {
-			if (pMissile) pMissile->RenderHitBox(_pCommandList, hitBoxMesh);
-		}
-	}
 }
 
 void PlayScene::AddLight(const shared_ptr<Light>& _pLight) {

@@ -54,7 +54,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             }
         }
         else {
-			
             GameFramework::Instance().FrameAdvance();
         }
     }
@@ -113,6 +112,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    GameFramework::Create(hInst, hWnd);
+    
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 

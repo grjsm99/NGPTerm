@@ -25,23 +25,22 @@ public:
 /// PlayScene
 class PlayScene : public Scene {
 private:
-	
-	int nStage;
-	float spawnTime;
+
 	float playerHP;
-	
+	UINT missileCount;
 	float keybufferTime;
-	bool drawHitBoxToggle;
 	
 	// 현재 아군 플레이어.
 	shared_ptr<Player> pPlayer;
 
-	// 적 플레이어가 들어갈 부분. 최대 2명
-	list<shared_ptr<Player>> pEnemys;
+	// 적 플레이어가 들어갈 부분.
+	list<shared_ptr<GameObject>> pEnemys;
+
+	// 본인 및 적의 미사일까지 포함
+	list<shared_ptr<GameObject>> pMissiles;
 
 	shared_ptr<GameObject> pWater;
 	
-	list<shared_ptr<GameObject>> pMissiles;
 	list<shared_ptr<Effect>> pEffects;
 	
 	shared_ptr<SkyBox> pSkyBox;

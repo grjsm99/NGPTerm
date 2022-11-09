@@ -98,7 +98,7 @@ void GameObject::MoveRight(float distance) {
 }
 
 void GameObject::Move(const XMFLOAT3& _moveVector, float _timeElapsed) {
-	localPosition = Vector3::Add(localPosition, _moveVector);
+	localPosition = Vector3::Add(localPosition, Vector3::ScalarProduct(_moveVector, _timeElapsed));
 }
 
 void GameObject::MoveUp(float distance) {
@@ -488,12 +488,12 @@ void GunShipObject::PrepareAnimate() {
 void GunShipObject::Animate(double _fTimeElapsed) {
 
 	if (rotorFrame) {
-		rotorFrame->Rotate(rotorFrame->GetLocalUpVector(), 1440.0f * _fTimeElapsed);
+		rotorFrame->Rotate(rotorFrame->GetLocalUpVector(), 1440.0f * (float)_fTimeElapsed);
 		rotorFrame->UpdateObject();
 
 	}
 	if (tailRotorFrame) {
-		tailRotorFrame->Rotate(tailRotorFrame->GetLocalRightVector(), 1440.0f * _fTimeElapsed);
+		tailRotorFrame->Rotate(tailRotorFrame->GetLocalRightVector(), 1440.0f * (float)_fTimeElapsed);
 		tailRotorFrame->UpdateObject();
 	}
 }
@@ -560,9 +560,10 @@ Missile::Missile() {
 Missile::~Missile() {
 	
 }
-void Missile::Create(XMFLOAT3 _position, XMFLOAT4 _rotate, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
+void Missile::Create(USHORT _cid, UINT _mid, XMFLOAT3 _position, XMFLOAT4 _rotate, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	GameFramework& gameFramework = GameFramework::Instance();
-	
+	clientId = _cid;
+	missileId = _mid;
 	name = "Missile";
 	GameObject::Create("Missile", _pDevice, _pCommandList);
 	self = shared_from_this();
@@ -571,7 +572,7 @@ void Missile::Create(XMFLOAT3 _position, XMFLOAT4 _rotate, const ComPtr<ID3D12De
 	//SetChild(gameFramework.GetGameObjectManager().GetGameObject(, _pDevice, _pCommandList));
 	moveSpeed = 0.0f;
 	XMFLOAT3 nPos = _position;
-	//nPos.y -= 5.0f;
+
 	SetLocalPosition(nPos);
 	SetLocalRotation(_rotate);
 	UpdateObject();
@@ -583,7 +584,7 @@ bool Missile::CheckRemove() const {
 
 void Missile::Animate(double _timeElapsed) {
 	lifeTime -= _timeElapsed;
-	moveSpeed += 2.0f * _timeElapsed;
+	moveSpeed += 150.0f * _timeElapsed;
 	MoveFrontRigid(true, _timeElapsed);
 
 	if(!CheckCollisionWithTerrain(shared_from_this()))
@@ -849,7 +850,16 @@ SkyBox::~SkyBox() {
 //////////// Effect //////////
 
 Effect::Effect() {
-
+	endUV = XMFLOAT2(0, 0);
+	startUV = XMFLOAT2(1, 1);
+	life = 0;
+	lifeTime = 0;
+	position = XMFLOAT3(0, 0, 0);
+	xframeCount = 0;
+	yframeCount = 0;
+	nextFrameTime = 0;
+	xsize = 0;
+	ysize = 0;
 }
 
 Effect::~Effect() {

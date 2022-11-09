@@ -2,13 +2,12 @@
 #include "Player.h"
 #include "GameFramework.h"
 
-
-
 Player::Player() {
 	hp = 100.0f;
 	isDead = false;
-	moveSpeed = 0.02f;
+	moveSpeed = 150.0f;
 	reloadTime = 0.0f;
+	clientId = 0;
 }
 
 Player::~Player() {
@@ -37,19 +36,17 @@ bool Player::GetIsDead() const {
 	return isDead;
 }
 
-void Player::FireMissile(list<shared_ptr<GameObject>>& _pMissiles, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
+void Player::FireMissile(UINT& _mid, list<shared_ptr<GameObject>>& _pMissiles, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	if (reloadTime > 0) return;
 	reloadTime = 0.1f;
-	shared_ptr<Missile> pMissileLeft = make_shared<Missile>();
-	shared_ptr<Missile> pMissileRight = make_shared<Missile>();
-	XMFLOAT3 dist = GetLocalRightVector();
-	dist = Vector3::ScalarProduct(dist, 2.0f);
-	XMFLOAT3 left = Vector3::Subtract(GetWorldPosition(), dist);
-	XMFLOAT3 right = Vector3::Subtract(GetWorldPosition(), Vector3::ScalarProduct(dist, -1.0f));
-	pMissileLeft->Create(left, GetLocalRotate(), _pDevice, _pCommandList);
-	pMissileRight->Create(right, GetLocalRotate(), _pDevice, _pCommandList);
-	_pMissiles.push_back(pMissileLeft);
-	_pMissiles.push_back(pMissileRight);
+	shared_ptr<Missile> pMissile = make_shared<Missile>();
+	
+	pMissile->Create(clientId, ++_mid, GetWorldPosition(), GetLocalRotate(), _pDevice, _pCommandList);
+	
+	// (수정) 동기화 및 서버로 전송 추가 필요
+	cout << _mid << "\n";
+	
+	_pMissiles.push_back(pMissile);
 }
 
 void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
@@ -88,10 +85,11 @@ void Player::Animate(double _timeElapsed) {
 		Rotate(axis2, angle2, 1);
 	}
 	UpdateObject();
-
+	// maxSpeed
 	if (!CheckCollisionWithTerrain(shared_from_this()))
 	{
-		moveVector = Vector3::ScalarProduct(moveVector, 0.98f);
+		moveVector = XMFLOAT3(0, 0, 0);
+		// 등속운동으로 변경
 	}
 	else {
 		worldTransform = prevWorld;

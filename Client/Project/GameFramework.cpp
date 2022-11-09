@@ -95,10 +95,8 @@ GameFramework::GameFramework() {
 	fenceValues.fill(0);
 	rtvDescriptorIncrementSize = 0;
 
-	// 현재 스왑체인의 후면 버퍼의 인덱스
 	swapChainBufferCurrentIndex = 0;
 	fenceEvent = NULL;
-	//PushScene(make_shared<Scene>());
 }
 
 GameFramework::~GameFramework() {
