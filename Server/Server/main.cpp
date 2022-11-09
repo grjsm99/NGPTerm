@@ -1,7 +1,6 @@
-#include "../../protocol.h"
-
+#include "stdafx.h"
 
 int main()
 {
-
+	
 }

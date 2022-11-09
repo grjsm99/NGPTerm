@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\protocol.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="GameFramework.h" />
