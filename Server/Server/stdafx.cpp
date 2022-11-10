@@ -1,5 +1,7 @@
 #include "stdafx.h"
-#include "SESSION.h"
+
+unordered_map<USHORT, SESSION> clients;
+int cid, mid;
 
 SESSION::SESSION(USHORT _id, SOCKET& _socket) {
 	id = _id;

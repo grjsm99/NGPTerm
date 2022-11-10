@@ -37,19 +37,6 @@ struct CS_REMOVE_PLAYER { // type = 3
 
 /////////////////////////////////////////////////////////
 
-class SESSION {
-private:
-	USHORT id;
-	XMFLOAT4X4 worldTransform;
-};
-
-class MISSILE {
-private:
-	UINT id;
-	XMFLOAT3 position;
-	XMFLOAT3 direction;
-};
-
 
 struct SC_WORLD_DATA { // type = 0
 	char type = 0;
@@ -58,6 +45,7 @@ struct SC_WORLD_DATA { // type = 0
 
 	// 이후 player_count값 만큼 SC_ADD_PLAYER를 보낸다.
 };
+
 struct SC_ADD_PLAYER { // type = 1
 	char type = 1;
 	USHORT client_id;	// 추가할 플레이어의 id

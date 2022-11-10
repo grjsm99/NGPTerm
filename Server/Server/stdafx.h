@@ -7,11 +7,35 @@
 #include <ws2tcpip.h> // 윈속2 확장 헤더
 #pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
+#include <iostream>
+
 #include <DirectXMath.h>
 #include <minwindef.h>
+#include <unordered_map>
 
 using namespace DirectX;
 using namespace std;
+
+
+class SESSION {
+private:
+	USHORT id;
+	SOCKET socket;
+	XMFLOAT4X4 transform;
+
+public:
+	// 생성자 & 소멸자
+	SESSION(USHORT _id, SOCKET& _socket);
+	virtual ~SESSION();
+
+	// get, set함수
+	const XMFLOAT4X4& GetTransform() const;
+	void SetTransform(const XMFLOAT4X4& _transform);
+
+};
+
+extern unordered_map<USHORT, SESSION> clients;
+extern int cid, mid;
 
 namespace Matrix4x4 {
 	inline XMFLOAT4X4 Identity() {
