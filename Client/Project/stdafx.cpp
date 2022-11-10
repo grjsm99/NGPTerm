@@ -10,6 +10,9 @@ UINT gnCbvSrvDescriptorIncrementSize = 0;
 random_device rd;
 mt19937 gen;
 
+SOCKET serverSock;
+CRITICAL_SECTION missileCS;
+CRITICAL_SECTION playerCS;
 
 float random(float min, float max) {
 	uniform_real_distribution<float> dis(min, max);

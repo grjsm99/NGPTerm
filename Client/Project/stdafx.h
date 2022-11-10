@@ -47,6 +47,10 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 
+//
+#include <winsock2.h> // 윈속2 메인 헤더
+#include <ws2tcpip.h> // 윈속2 확장 헤더
+//#pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 // // SDKDDKVer.h를 포함하면 최고 수준의 가용성을 가진 Windows 플랫폼이 정의됩니다.
 // 이전 Windows 플랫폼용 애플리케이션을 빌드하려는 경우에는 SDKDDKVer.h를 포함하기 전에
@@ -73,8 +77,6 @@
 #include <numeric>
 #include <algorithm>
 
-#include "../../protocol.h"
-
 using namespace std;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -86,9 +88,9 @@ extern UINT gnDsvDescriptorIncrementSize;
 using Microsoft::WRL::ComPtr;
 
 // 네트워크 전역 변수
-SOCKET serverSock;
-CRITICAL_SECTION missileCS;
-CRITICAL_SECTION playerCS;
+extern SOCKET serverSock;
+extern CRITICAL_SECTION missileCS;
+extern CRITICAL_SECTION playerCS;
 
 // float 난수 생성
 float random(float min, float max);
