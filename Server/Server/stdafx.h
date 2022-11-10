@@ -13,6 +13,9 @@
 #include <minwindef.h>
 #include <unordered_map>
 
+#define SERVERPORT 9000
+#define BUFSIZE    1000
+
 using namespace DirectX;
 using namespace std;
 
