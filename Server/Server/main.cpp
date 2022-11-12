@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "../../protocol.h"
 
+SOCKET sock;
+
 void AcceptClient()
 {
 	WSADATA wsa;
@@ -27,15 +29,21 @@ void AcceptClient()
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
 
-	struct sockaddr_in clientaddr;
-	int addrlen;
-	char buf[BUFSIZE + 1];
-	
-	addrlen = sizeof(clientaddr);
+	struct sockaddr_in clientAddr;
+	int addrlen = 0;
+	addrlen = sizeof(clientAddr);
+
+	sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
+	clients.insert({ cid ,SESSION(cid,sock) });
+	++cid;
+
 }
+
+
 
 
 int main()
 {
-	cout << "sgfdsg" << endl;
+	AcceptClient();
 }
+
