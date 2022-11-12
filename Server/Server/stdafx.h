@@ -38,7 +38,7 @@ public:
 };
 
 extern unordered_map<USHORT, SESSION> clients;
-extern int cid, mid;
+extern USHORT cid = 0, mid = 0;
 
 namespace Matrix4x4 {
 	inline XMFLOAT4X4 Identity() {
