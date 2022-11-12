@@ -25,8 +25,6 @@ void GameFramework::Create(HINSTANCE _hInstance, HWND _hMainWnd) {
 		CoInitialize(NULL);
 		gameFramework.pCommandList->Reset(gameFramework.pCommandAllocator.Get(), NULL);
 
-		
-
 		// 쉐이더 생성
 		Mesh::MakeShader(gameFramework.pDevice, gameFramework.pRootSignature);
 		HitBoxMesh::MakeShader(gameFramework.pDevice, gameFramework.pRootSignature);
@@ -42,17 +40,16 @@ void GameFramework::Create(HINSTANCE _hInstance, HWND _hMainWnd) {
 
 		// 히트박스용 메쉬 생성
 		gameFramework.meshManager.GetHitBoxMesh().Create(gameFramework.pDevice, gameFramework.pCommandList);
-
-
 		
 		gameFramework.pCommandList->Close();
 		
 		vector<ComPtr<ID3D12CommandList>> pCommandLists = { gameFramework.pCommandList.Get() };
 		gameFramework.pCommandQueue->ExecuteCommandLists(1, pCommandLists.data()->GetAddressOf());
-		
 
 		gameFramework.WaitForGpuComplete();
 		startScene->ReleaseUploadBuffers();
+
+		// RecvWorldData();
 
 		gameFramework.gameTimer.Reset();    // 타이머 리셋
 	}
@@ -332,8 +329,6 @@ void GameFramework::CreateGraphicsRootSignature() {
 	pRootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	// texture Map
 	
 	
-	
-
 	// 정적 샘플러
 	D3D12_STATIC_SAMPLER_DESC samplerDesc[2];
 	::ZeroMemory(samplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC) * 2);

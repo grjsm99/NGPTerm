@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "Project.h"
 #include "GameFramework.h"
-
+#include "../../protocol.h"
 
 #define MAX_LOADSTRING 100
 
@@ -61,6 +61,52 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     return (int) msg.wParam;
 }
+DWORD WINAPI ProcessRecv(LPVOID _curScene)
+{
+    Scene* scene = (Scene*)_curScene;
+    int retval;
+    char packetType;
+    char* buffer = new char[128];
+    size_t packSize[] = { 0, sizeof(SC_ADD_PLAYER) - 1, sizeof(SC_ADD_MISSILE) - 1, sizeof(SC_MOVE_PLAYER) - 1, sizeof(SC_REMOVE_MISSILE) - 1, sizeof(SC_REMOVE_PLAYER) - 1 };
+    while (true)
+    {
+        cout << "12";
+        // 1바이트를 받아 패킷 타입 알아내기
+        retval = recv(serverSock, buffer, 1, 0);
+        if (retval == SOCKET_ERROR) {
+            err_display("send()");
+            return retval;
+        }
+
+        packetType = buffer[0];
+        // 해당 패킷의 크기만큼 recv
+        recv(serverSock, buffer + 1, packSize[packetType], 0);
+        
+
+        if (packetType == 1) {
+            SC_ADD_PLAYER* packet = reinterpret_cast<SC_ADD_PLAYER*>(buffer);
+            // scene.AddEnemy(); 
+        }
+        if (packetType == 2) {
+            SC_ADD_MISSILE* packet = reinterpret_cast<SC_ADD_MISSILE*>(buffer);
+            // scene.AddMissile(); 
+        }
+        if (packetType == 3) {
+            SC_MOVE_PLAYER* packet = reinterpret_cast<SC_MOVE_PLAYER*>(buffer);
+            // scene.EnemyMove();
+        }
+        if (packetType == 4) {
+            SC_REMOVE_MISSILE* packet = reinterpret_cast<SC_REMOVE_MISSILE*>(buffer);
+            // scene.RemoveMissile();{
+        }
+        if (packetType == 5) {
+            SC_REMOVE_PLAYER* packet = reinterpret_cast<SC_REMOVE_PLAYER*>(buffer);
+            // scene.RemoveEnemy();{
+        }
+    }
+
+    return 0;
+}
 
 //  함수: MyRegisterClass()
 //  용도: 창 클래스를 등록합니다.
@@ -112,7 +158,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    GameFramework::Create(hInst, hWnd);
-    
+   
+   // Recv 쓰레드 생성
+   CreateThread(NULL, 0, ProcessRecv, GameFramework::Instance().GetCurrentScene().get(), 0, NULL);
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -184,3 +233,4 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+
