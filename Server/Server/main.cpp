@@ -27,17 +27,15 @@ void AcceptClient()
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
 
-	struct sockaddr_in clientAddr;
-	int addrlen = 0;
-	addrlen = sizeof(clientAddr);
-	SOCKET sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
-	clients.insert({ cid ,SESSION(cid,sock) });
-	++cid;
-
+	struct sockaddr_in clientaddr;
+	int addrlen;
+	char buf[BUFSIZE + 1];
+	
+	addrlen = sizeof(clientaddr);
 }
 
 
 int main()
 {
-	
+	cout << "sgfdsg" << endl;
 }

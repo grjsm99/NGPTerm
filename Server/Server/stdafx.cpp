@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 unordered_map<USHORT, SESSION> clients;
-
 int cid, mid;
 
 SESSION::SESSION(USHORT _id, SOCKET& _socket) {
