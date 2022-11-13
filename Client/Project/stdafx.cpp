@@ -13,6 +13,7 @@ mt19937 gen;
 SOCKET serverSock;
 CRITICAL_SECTION missileCS;
 CRITICAL_SECTION playerCS;
+char* SERVERIP = (char*)"127.0.0.1";
 
 float random(float min, float max) {
 	uniform_real_distribution<float> dis(min, max);

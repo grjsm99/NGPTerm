@@ -91,6 +91,8 @@ using Microsoft::WRL::ComPtr;
 extern SOCKET serverSock;
 extern CRITICAL_SECTION missileCS;
 extern CRITICAL_SECTION playerCS;
+extern char* SERVERIP;
+#define SERVERPORT 9000
 
 // float 난수 생성
 float random(float min, float max);
