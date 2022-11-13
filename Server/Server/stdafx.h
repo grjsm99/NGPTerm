@@ -28,17 +28,19 @@ private:
 
 public:
 	// 생성자 & 소멸자
+	SESSION() = default;
 	SESSION(USHORT _id, SOCKET& _socket);
 	virtual ~SESSION();
 
 	// get, set함수
 	const XMFLOAT4X4& GetTransform() const;
 	void SetTransform(const XMFLOAT4X4& _transform);
-
+	const SOCKET& GetSocket() const;
 };
 
 extern unordered_map<USHORT, SESSION> clients;
 extern int cid, mid;
+extern CRITICAL_SECTION clientsCS;
 
 namespace Matrix4x4 {
 	inline XMFLOAT4X4 Identity() {
