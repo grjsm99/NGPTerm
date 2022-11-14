@@ -342,3 +342,7 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	pSkyBox = make_shared<SkyBox>();
 	pSkyBox->Create(_pDevice, _pCommandList);
 }
+
+void PlayScene::SetPlayerClientID(USHORT _cid) {
+	pPlayer->SetClientID(_cid);
+}

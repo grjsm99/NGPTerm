@@ -78,3 +78,4 @@ struct SC_REMOVE_PLAYER { // id = 5
 };
 
 #pragma pack(pop)
+

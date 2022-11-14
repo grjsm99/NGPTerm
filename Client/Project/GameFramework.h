@@ -1,4 +1,5 @@
 #pragma once
+#include "..\..\protocol.h"
 #include "Timer.h"
 #include "Scene.h"
 
@@ -115,6 +116,9 @@ public:
 	void PopScene();
 	void ChangeScene(const shared_ptr<Scene>& _pScene);
 	void ClearScene();
+
+	// 서버로부터 다른 플레이어들의 정보 받아 적용하기
+	void RecvWorldData();
 
 	// 서버에서 받은 패킷으로 현재 씬에 적용
 	void AddPlayer(const SC_ADD_PLAYER& _packet);

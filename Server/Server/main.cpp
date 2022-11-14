@@ -54,11 +54,12 @@ bool SendAddPlayer() {
 	SC_ADD_PLAYER packet;
 	packet.client_id = cid;	//신규 클라이언트의 아이디 적재
 	EnterCriticalSection(&clientsCS);
-	packet.worldTransform = clients[cid].GetTransform();	// 신큐 클라이언트의 위치 적재
+	packet.worldTransform = clients[cid].GetTransform();	// 신규 클라이언트의 위치 적재
 	for (auto&[id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendAddPlayer()");
+			LeaveCriticalSection(&clientsCS);
 			return false;
 		}
 	}
