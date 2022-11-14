@@ -198,8 +198,8 @@ void GameObject::UpdateLocalTransform() {
 	localTransform._41 = localPosition.x;
 	localTransform._42 = localPosition.y;
 	localTransform._43 = localPosition.z;
-
 }
+
 void GameObject::UpdateWorldTransform() {
 	//UpdateLocalTransform();
 

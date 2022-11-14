@@ -115,4 +115,9 @@ public:
 	void PopScene();
 	void ChangeScene(const shared_ptr<Scene>& _pScene);
 	void ClearScene();
+
+	// 서버에서 받은 패킷으로 현재 씬에 적용
+	void AddPlayer(const SC_ADD_PLAYER& _packet);
+	void AddMissile(const SC_ADD_MISSILE& _packet);
+	void EnemyMove(const SC_MOVE_PLAYER& _packet);
 };

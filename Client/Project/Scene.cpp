@@ -3,6 +3,7 @@
 #include "Timer.h"
 #include "GameFramework.h"
 
+#include "../../protocol.h"
 
 
 Scene::Scene() {
@@ -133,6 +134,9 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 		pMissile->Animate(_timeElapsed);
 	}
 	
+	for (auto& pEnemy : pEnemys) {
+		pEnemy->Animate(_timeElapsed);
+	}
 	pWater->Animate(_timeElapsed);
 }
 
@@ -226,6 +230,41 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 
 void PlayScene::AddLight(const shared_ptr<Light>& _pLight) {
 	pLights.push_back(_pLight);
+}
+
+void PlayScene::AddPlayer(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList)
+{
+	shared_ptr<Player> pEnemy = make_shared<Player>();
+	pEnemy->Create("Gunship", _pDevice, _pCommandList);
+	pEnemy->SetLocalScale(XMFLOAT3(22,22,22));
+	pEnemy->UpdateObject();
+	pEnemy->SetClientID(_packet.client_id);
+
+	EnterCriticalSection(&playerCS);
+	pEnemys.push_back(pEnemy);
+	LeaveCriticalSection(&playerCS);
+}
+
+void PlayScene::AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList)
+{
+	shared_ptr<Missile> pMissile = make_shared<Missile>();
+	pMissile->Create(_packet.client_id, _packet.missile_id, _packet.position, _packet.rotation, _pDevice, _pCommandList);
+	
+	EnterCriticalSection(&missileCS);
+	pMissiles.push_back(pMissile);
+	LeaveCriticalSection(&missileCS);
+}
+
+void PlayScene::EnemyMove(const SC_MOVE_PLAYER& _packet)
+{
+	auto target = find_if(pEnemys.begin(), pEnemys.end(), [_packet](const shared_ptr<Player>& _p) { return _p->GetClientID() == _packet.client_id; });
+
+	// 추후 각 플레이어마다 임계영역을 따로 만들어 설정해주도록 바꿀 예정
+	EnterCriticalSection(&playerCS);
+	(*target)->SetLocalPosition(_packet.localPosition);
+	(*target)->SetLocalRotation(_packet.localRotation);
+	(*target)->UpdateObject();
+	LeaveCriticalSection(&playerCS);
 }
 
 shared_ptr<TerrainMap> PlayScene::GetTerrain() const {

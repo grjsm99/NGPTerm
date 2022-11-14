@@ -55,15 +55,16 @@ struct SC_ADD_PLAYER { // type = 1
 struct SC_ADD_MISSILE { // type = 2
 	char type = 2;
 	UINT missile_id;    // 추가할 미사일의 id
-	XMFLOAT3 position;			// 추가할 미사일의 위치
+	XMFLOAT3 position;		// 추가할 미사일의 위치
 	USHORT client_id;	// 미사일을 발사한 클라이언트의 id
-	XMFLOAT3 direction;			// 미사일의 방향
+	XMFLOAT4 rotation;  // 미사일의 회전값
 };
 
 struct SC_MOVE_PLAYER { // type = 3
 	char type = 3;
 	USHORT client_id;	// 이동한 플레이어의 id
-	XMFLOAT4X4 worldTransform;  // 플레이어의 이동 후 월드 행렬
+	XMFLOAT3 localPosition; // 이동한 플레이어의 위치
+	XMFLOAT4 localRotation; // 이동한 플레이어의 회전값
 };
 
 struct SC_REMOVE_MISSILE { // type = 4
@@ -77,41 +78,3 @@ struct SC_REMOVE_PLAYER { // id = 5
 };
 
 #pragma pack(pop)
-
-
-// 소켓 함수 오류 출력 후 종료
-void err_quit(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
-}
-
-// 소켓 함수 오류 출력
-void err_display(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[%s] %s\n", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}
-
-// 소켓 함수 오류 출력
-void err_display(int errcode) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, errcode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[오류] %s\n", (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}

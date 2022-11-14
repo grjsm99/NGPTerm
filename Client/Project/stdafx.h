@@ -77,6 +77,8 @@
 #include <numeric>
 #include <algorithm>
 
+#include "../../protocol.h"
+
 using namespace std;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -111,6 +113,9 @@ std::ostream& operator<<(std::ostream& os, const XMFLOAT4X4& f4x4);
 ComPtr<ID3D12Resource> CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const wchar_t* pszFileName, ID3D12Resource** ppd3dUploadBuffer, D3D12_RESOURCE_STATES d3dResourceStates);
 ComPtr<ID3D12Resource> CreateTexture2DResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, UINT nWidth, UINT nHeight, UINT nElements, UINT nMipLevels, DXGI_FORMAT dxgiFormat, D3D12_RESOURCE_FLAGS d3dResourceFlags, D3D12_RESOURCE_STATES d3dResourceStates, D3D12_CLEAR_VALUE* pd3dClearValue);
 
+void err_quit(const char* msg);
+void err_display(const char* msg);
+void err_display(int errcode);
 
 namespace Vector3 {
 	inline XMFLOAT3 Normalize(const XMFLOAT3& _vector) {

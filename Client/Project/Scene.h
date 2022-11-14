@@ -3,6 +3,7 @@
 #include "Light.h"
 #include "Image2D.h"
 
+
 class Scene {
 protected:
 
@@ -18,6 +19,10 @@ public:
 	virtual void AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
 	virtual void CheckCollision();
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
+	
+	virtual void AddPlayer(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
+	virtual void AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
+	virtual void EnemyMove(const SC_MOVE_PLAYER& _packet) = 0;
 };
 
 
@@ -34,7 +39,7 @@ private:
 	shared_ptr<Player> pPlayer;
 
 	// 적 플레이어가 들어갈 부분.
-	list<shared_ptr<GameObject>> pEnemys;
+	list<shared_ptr<Player>> pEnemys;
 
 	// 본인 및 적의 미사일까지 포함
 	list<shared_ptr<GameObject>> pMissiles;
@@ -73,7 +78,10 @@ public:
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 
 	void AddLight(const shared_ptr<Light>& _pLight);
-	
+	void AddPlayer(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
+	void AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
+	void EnemyMove(const SC_MOVE_PLAYER& _packet) final;
+
 	shared_ptr<TerrainMap> GetTerrain() const;
 	virtual void LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 };

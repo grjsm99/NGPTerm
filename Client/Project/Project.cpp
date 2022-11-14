@@ -79,6 +79,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             GameFramework::Instance().FrameAdvance();
         }
     }
+    DeleteCriticalSection(&missileCS);
+    DeleteCriticalSection(&playerCS);
     GameFramework::Destroy();
 
     return (int) msg.wParam;
@@ -86,14 +88,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 DWORD WINAPI ProcessRecv(LPVOID _curScene)
 {
-    Scene* scene = (Scene*)_curScene;
+    GameFramework gameFramework = GameFramework::Instance();
+
     int retval;
     char packetType;
     char* buffer = new char[128];
     size_t packSize[] = { 0, sizeof(SC_ADD_PLAYER) - 1, sizeof(SC_ADD_MISSILE) - 1, sizeof(SC_MOVE_PLAYER) - 1, sizeof(SC_REMOVE_MISSILE) - 1, sizeof(SC_REMOVE_PLAYER) - 1 };
+    SC_ADD_PLAYER asd;
+    asd.client_id = 5;
+    gameFramework.AddPlayer(asd);
     while (true)
     {
-        cout << "12";
         // 1바이트를 받아 패킷 타입 알아내기
         retval = recv(serverSock, buffer, 1, 0);
         if (retval == SOCKET_ERROR) {
@@ -103,20 +108,23 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
 
         packetType = buffer[0];
         // 해당 패킷의 크기만큼 recv
-        recv(serverSock, buffer + 1, packSize[packetType], 0);
-        
+        retval = recv(serverSock, buffer + 1, packSize[packetType], 0);
+        if (retval == SOCKET_ERROR) {
+            err_display("send()");
+            return retval;
+        }
 
         if (packetType == 1) {
             SC_ADD_PLAYER* packet = reinterpret_cast<SC_ADD_PLAYER*>(buffer);
-            // scene.AddEnemy(); 
+            gameFramework.AddPlayer(*packet);
         }
         if (packetType == 2) {
             SC_ADD_MISSILE* packet = reinterpret_cast<SC_ADD_MISSILE*>(buffer);
-            // scene.AddMissile(); 
+            gameFramework.AddMissile(*packet);
         }
         if (packetType == 3) {
             SC_MOVE_PLAYER* packet = reinterpret_cast<SC_MOVE_PLAYER*>(buffer);
-            // scene.EnemyMove();
+            gameFramework.EnemyMove(*packet);
         }
         if (packetType == 4) {
             SC_REMOVE_MISSILE* packet = reinterpret_cast<SC_REMOVE_MISSILE*>(buffer);
@@ -180,6 +188,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   InitializeCriticalSection(&missileCS);
+   InitializeCriticalSection(&playerCS);
    GameFramework::Create(hInst, hWnd);
    
    // Recv 쓰레드 생성

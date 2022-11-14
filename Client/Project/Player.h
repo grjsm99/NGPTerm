@@ -10,6 +10,7 @@ private:
 	bool isDead;
 	weak_ptr<Camera> pCamera;
 	float reloadTime;
+
 	USHORT clientId;
 
 public:
@@ -24,6 +25,8 @@ public:
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 	shared_ptr<Camera> GetCamera() const;
 
+	void SetClientID(USHORT _cid) { clientId = _cid; };
+	USHORT GetClientID() const { return clientId; };
 	void Animate(double _timeElapsed);
 	float Hit(float _damage) { hp -= _damage; return hp; };
 };

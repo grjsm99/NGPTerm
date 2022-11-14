@@ -599,3 +599,16 @@ void GameFramework::ClearScene() {
 	}
 }
 
+//////////////////////
+
+void GameFramework::AddPlayer(const SC_ADD_PLAYER& _packet) {
+	if (!pScenes.empty()) pScenes.top()->AddPlayer(_packet, pDevice, pCommandList);
+}
+
+void GameFramework::AddMissile(const SC_ADD_MISSILE& _packet) {
+	if (!pScenes.empty()) pScenes.top()->AddMissile(_packet, pDevice, pCommandList);
+}
+
+void GameFramework::EnemyMove(const SC_MOVE_PLAYER& _packet) {
+	if (!pScenes.empty()) pScenes.top()->EnemyMove(_packet);
+}
