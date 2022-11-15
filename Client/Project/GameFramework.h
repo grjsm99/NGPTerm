@@ -124,4 +124,6 @@ public:
 	void AddPlayer(const SC_ADD_PLAYER& _packet);
 	void AddMissile(const SC_ADD_MISSILE& _packet);
 	void EnemyMove(const SC_MOVE_PLAYER& _packet);
+	void RemoveMissile(const SC_REMOVE_MISSILE& _packet);
+	void RemoveEnemy(const SC_REMOVE_PLAYER& _packet);
 };

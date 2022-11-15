@@ -635,3 +635,14 @@ void GameFramework::AddMissile(const SC_ADD_MISSILE& _packet) {
 void GameFramework::EnemyMove(const SC_MOVE_PLAYER& _packet) {
 	if (!pScenes.empty()) pScenes.top()->EnemyMove(_packet);
 }
+
+void GameFramework::RemoveMissile(const SC_REMOVE_MISSILE& _packet)
+{
+	if (!pScenes.empty()) pScenes.top()->RemoveMissile(_packet);
+}
+
+void GameFramework::RemoveEnemy(const SC_REMOVE_PLAYER& _packet)
+{
+	if (!pScenes.empty()) pScenes.top()->RemoveEnemy(_packet);
+}
+

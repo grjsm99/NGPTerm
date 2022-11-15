@@ -199,6 +199,9 @@ public:
 	bool CheckRemove() const;
 	virtual void Animate(double _timeElapsed);
 	virtual void CopyObject(const GameObject& _other);
+
+	UINT GetMissileID() const { return missileId; };
+	USHORT GetCliendID() const { return clientId; };
 	void Remove();
 };
 
