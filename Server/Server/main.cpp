@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "../../protocol.h"
 
-SOCKET sock;
+
 
 void AcceptClient()
 {
 	WSADATA wsa;
+	SOCKET sock;
 	int retval{};
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -32,10 +33,13 @@ void AcceptClient()
 	struct sockaddr_in clientAddr;
 	int addrlen = 0;
 	addrlen = sizeof(clientAddr);
-
-	sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
-	clients.insert({ cid ,SESSION(cid,sock) });
-	++cid;
+	while(1)
+	{
+		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
+		clients.insert({ cid ,SESSION(cid,sock) });
+		++cid;
+	}
+	
 
 }
 
@@ -66,4 +70,30 @@ bool SendAddPlayer() {
 	LeaveCriticalSection(&clientsCS);
 	++cid;
 	return true;
+}
+
+
+bool SendWorldData()
+{
+	SC_WORLD_DATA packet;
+	int	retval{};
+
+	packet.my_client_id = cid;		
+	for (auto& [id, session] : clients) {
+		++packet.player_count;	
+		if (id == cid)
+			break;
+		retval = send(clients[cid].GetSocket(), (char*)&packet, sizeof(packet), 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("SendWorldData()");
+			return false;
+		}
+
+	}
+
+	if (!SendAddPlayer())
+		return false;
+
+	return true;
+
 }
