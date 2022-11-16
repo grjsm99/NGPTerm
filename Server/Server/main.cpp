@@ -1,16 +1,11 @@
 #include "stdafx.h"
 #include "../../protocol.h"
 
-//DWORD WINAPI ProcessIO(LPVOID _arg)
-//{
-//
-//}
+SOCKET sock;
 
 void AcceptClient()
 {
-
 	WSADATA wsa;
-	SOCKET sock;
 	int retval{};
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -33,15 +28,15 @@ void AcceptClient()
 	retval = listen(listenSock, SOMAXCONN);
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
+
 	struct sockaddr_in clientAddr;
 	int addrlen = 0;
 	addrlen = sizeof(clientAddr);
 
-	while (1)
-	{
-		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
-		clients.insert({ cid ,SESSION(cid,sock) });
-	}
+	sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
+	clients.insert({ cid ,SESSION(cid,sock) });
+	++cid;
+
 }
 
 bool SendAddPlayer();
@@ -71,28 +66,4 @@ bool SendAddPlayer() {
 	LeaveCriticalSection(&clientsCS);
 	++cid;
 	return true;
-}
-
-bool SendWorldData()
-{
-	SC_WORLD_DATA packet;
-	int	retval{};
-
-	packet.my_client_id = cid;		// 접속한 클라이언트에게 id 부여
-	for (auto& [id, session] : clients) {
-		++packet.player_count;		// 접속자수 카운트
-		if (id == cid)		
-			break;
-		retval = send(clients[id].GetSocket(), (char*)&packet, sizeof(packet), 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("SendWorldData()");
-			return false;
-		}
-	}
-
-	if (!SendAddPlayer())
-		return false;
-
-	return true;
-
 }
