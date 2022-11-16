@@ -605,21 +605,26 @@ void GameFramework::RecvWorldData() {
 	if (result == SOCKET_ERROR)
 		err_display("recv()");
 
-	vector<SC_ADD_PLAYER> addPlayerPackets;
-	addPlayerPackets.assign(worldDataPacket.player_count, {});
-	result = recv(serverSock, (char*)addPlayerPackets.data(), sizeof(SC_ADD_PLAYER) * addPlayerPackets.size(), MSG_WAITALL);
-	if (result == SOCKET_ERROR)
-		err_display("recv()");
+	if (worldDataPacket.player_count != 0) {
+		vector<SC_ADD_PLAYER> addPlayerPackets;
+		addPlayerPackets.assign(worldDataPacket.player_count, {});
+		result = recv(serverSock, (char*)addPlayerPackets.data(), sizeof(SC_ADD_PLAYER) * addPlayerPackets.size(), MSG_WAITALL);
+		if (result == SOCKET_ERROR)
+			err_display("recv()");
 
-	// 씬이 비어있지 않을 경우
-	if (!pScenes.empty()) {
-		// 타 플레이어 생성
-		for (auto& addPlayerPacket : addPlayerPackets) {
-			AddEnemy(addPlayerPacket);
+		// 씬이 비어있지 않을 경우
+		if (!pScenes.empty()) {
+			// 타 플레이어 생성
+			for (auto& addPlayerPacket : addPlayerPackets) {
+				AddEnemy(addPlayerPacket);
+				
+			}
+			// 나의 clientID Set
+			static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.player_count);
 		}
-		// 나의 clientID Set
-		static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.player_count + 1);
+
 	}
+	cout << "my ClientID : " << (int)worldDataPacket.player_count << endl;
 }
 
 //////////////////////

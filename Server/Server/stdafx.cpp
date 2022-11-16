@@ -42,19 +42,12 @@ CRITICAL_SECTION clientsCS;
 SESSION::SESSION(USHORT _id, SOCKET& _socket) {
 	id = _id;
 	socket = _socket;
-	transform = Matrix4x4::Identity();
+	localPosition = XMFLOAT3(0, 0, 0);
+	localRotation = XMFLOAT4(0, 0, 0, 1);
 }
 
 SESSION::~SESSION() {
 
-}
-
-const XMFLOAT4X4& SESSION::GetTransform() const {
-	return transform;
-}
-
-void SESSION::SetTransform(const XMFLOAT4X4& _transform) {
-	transform = _transform;
 }
 
 const SOCKET& SESSION::GetSocket() const {

@@ -50,7 +50,8 @@ struct SC_WORLD_DATA { // type = 0
 struct SC_ADD_PLAYER { // type = 1
 	char type = 1;
 	USHORT client_id;	// 추가할 플레이어의 id
-	XMFLOAT4X4 worldTransform;  // 플레이어의 월드 행렬
+	XMFLOAT3 localPosition; // 이동한 플레이어의 위치
+	XMFLOAT4 localRotation; // 이동한 플레이어의 회전값
 };
 
 struct SC_ADD_MISSILE { // type = 2

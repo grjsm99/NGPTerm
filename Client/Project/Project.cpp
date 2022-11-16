@@ -94,9 +94,8 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
     char packetType;
     char* buffer = new char[128];
     size_t packSize[] = { 0, sizeof(SC_ADD_PLAYER) - 1, sizeof(SC_ADD_MISSILE) - 1, sizeof(SC_MOVE_PLAYER) - 1, sizeof(SC_REMOVE_MISSILE) - 1, sizeof(SC_REMOVE_PLAYER) - 1 };
-    SC_ADD_PLAYER asd;
-    asd.client_id = 5;
-    gameFramework.AddPlayer(asd);
+    //gameFramework.AddEnemy(asd);
+    gameFramework.RecvWorldData();
     while (true)
     {
         // 1바이트를 받아 패킷 타입 알아내기

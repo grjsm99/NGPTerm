@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "../../protocol.h"
 
+bool SendAddPlayer(const SESSION& _Session);
+bool SendWorldData(const SESSION& _Session);
 
 void AcceptClient()
 {
@@ -36,13 +38,16 @@ void AcceptClient()
 	while(1)
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
-		clients.insert({ cid ,SESSION(cid,sock) });
+		SESSION newSession(cid, sock);
+		SendWorldData(newSession);
+		SendAddPlayer(newSession);
+		clients.insert({ cid , newSession });
+		++cid;
+
 	}
 	
 
 }
-
-bool SendAddPlayer();
 
 int main()
 {
@@ -53,11 +58,13 @@ int main()
 	DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
 }
 
-bool SendAddPlayer() {
+// 신규 유저에 대한 정보를 패킷에 담아 미리 접속해 있던 모든 플레이어에게 전송한다.
+bool SendAddPlayer(const SESSION& _Session) {
 	SC_ADD_PLAYER packet;
-	packet.client_id = cid;	//신규 클라이언트의 아이디 적재
+	packet.client_id = _Session.GetID();	//신규 클라이언트의 아이디 적재
 	EnterCriticalSection(&clientsCS);
-	packet.worldTransform = clients[cid].GetTransform();	// 신규 클라이언트의 위치 적재
+	packet.localPosition = _Session.GetLocalPosition();	// 신규 클라이언트의 위치 적재
+	packet.localRotation = _Session.GetLocalRotation();	// 신규 클라이언트의 위치 적재
 	for (auto&[id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
@@ -67,18 +74,18 @@ bool SendAddPlayer() {
 		}
 	}
 	LeaveCriticalSection(&clientsCS);
-	++cid;
 	return true;
 }
 
-bool SendWorldData()
+// 신규 유저에게 미리 접속해 있던 플레이어들의 정보를 전부 보낸다.
+bool SendWorldData(const SESSION& _Session)
 {
 	SC_WORLD_DATA WorldDataPacket;
 	vector<SC_ADD_PLAYER> addPlayer;
 	int	retval{};
 	WorldDataPacket.player_count = clients.size();
 
-	retval = send(clients[cid].GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
+	retval = send(_Session.GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
 		return false;
@@ -87,14 +94,15 @@ bool SendWorldData()
 	for (auto& [id, session] : clients) {			// 플레이어 수 만큼 카운트해주고 접속해 있는 플레이어들 패킷에 담아주기
 		SC_ADD_PLAYER AddPlayerPacket;
 		AddPlayerPacket.client_id = id;
-		AddPlayerPacket.worldTransform = session.GetTransform();
+		AddPlayerPacket.localPosition = session.GetLocalPosition();
+		AddPlayerPacket.localRotation = session.GetLocalRotation();
 		addPlayer.push_back(AddPlayerPacket);
 	}
-	retval = send(clients[cid].GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
+	retval = send(_Session.GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
 	if (retval == SOCKET_ERROR) {
-			err_display("SendExistingClientsData()");
-			return false;
-		}
+		err_display("SendExistingClientsData()");
+		return false;
+	}
 	
 	return true;
 

@@ -30,7 +30,8 @@ class SESSION {
 private:
 	USHORT id;
 	SOCKET socket;
-	XMFLOAT4X4 transform;
+	XMFLOAT3 localPosition; // 이동한 플레이어의 위치
+	XMFLOAT4 localRotation; // 이동한 플레이어의 회전값
 
 public:
 	// 생성자 & 소멸자
@@ -39,9 +40,14 @@ public:
 	virtual ~SESSION();
 
 	// get, set함수
-	const XMFLOAT4X4& GetTransform() const;
-	void SetTransform(const XMFLOAT4X4& _transform);
+	const XMFLOAT3& GetLocalPosition() const { return localPosition; };
+	void SetLocalPosition(const XMFLOAT3& _localPosition) { localPosition = _localPosition; };
+	const XMFLOAT4& GetLocalRotation() const { return localRotation; };
+	void SetLocalRotation(const XMFLOAT4& _localRotation) { localRotation = _localRotation; };
+	
+	USHORT GetID() const { return id; };
 	const SOCKET& GetSocket() const;
+
 };
 
 extern unordered_map<USHORT, SESSION> clients;
