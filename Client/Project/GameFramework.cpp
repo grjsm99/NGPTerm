@@ -1,4 +1,4 @@
-	#include "stdafx.h"
+#include "stdafx.h"
 #include "GameFramework.h"
 
 
@@ -615,7 +615,7 @@ void GameFramework::RecvWorldData() {
 	if (!pScenes.empty()) {
 		// 타 플레이어 생성
 		for (auto& addPlayerPacket : addPlayerPackets) {
-			AddPlayer(addPlayerPacket);
+			AddEnemy(addPlayerPacket);
 		}
 		// 나의 clientID Set
 		static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.player_count + 1);
@@ -624,8 +624,8 @@ void GameFramework::RecvWorldData() {
 
 //////////////////////
 
-void GameFramework::AddPlayer(const SC_ADD_PLAYER& _packet) {
-	if (!pScenes.empty()) pScenes.top()->AddPlayer(_packet, pDevice, pCommandList);
+void GameFramework::AddEnemy(const SC_ADD_PLAYER& _packet) {
+	if (!pScenes.empty()) pScenes.top()->AddEnemy(_packet, pDevice, pCommandList);
 }
 
 void GameFramework::AddMissile(const SC_ADD_MISSILE& _packet) {

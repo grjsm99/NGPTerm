@@ -116,7 +116,7 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
 
         if (packetType == 1) {
             SC_ADD_PLAYER* packet = reinterpret_cast<SC_ADD_PLAYER*>(buffer);
-            gameFramework.AddPlayer(*packet);
+            gameFramework.AddEnemy(*packet);
         }
         if (packetType == 2) {
             SC_ADD_MISSILE* packet = reinterpret_cast<SC_ADD_MISSILE*>(buffer);
@@ -128,11 +128,11 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
         }
         if (packetType == 4) {
             SC_REMOVE_MISSILE* packet = reinterpret_cast<SC_REMOVE_MISSILE*>(buffer);
-            // scene.RemoveMissile();{
+            gameFramework.RemoveMissile(*packet);
         }
         if (packetType == 5) {
             SC_REMOVE_PLAYER* packet = reinterpret_cast<SC_REMOVE_PLAYER*>(buffer);
-            // scene.RemoveEnemy();{
+            gameFramework.RemoveEnemy(*packet);
         }
     }
 
