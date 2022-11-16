@@ -81,14 +81,11 @@ bool SendWorldData()
 	packet.my_client_id = cid;		
 	for (auto& [id, session] : clients) {
 		++packet.player_count;	
-		if (id == cid)
-			break;
-		retval = send(clients[cid].GetSocket(), (char*)&packet, sizeof(packet), 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("SendWorldData()");
-			return false;
-		}
-
+	}
+	retval = send(clients[cid].GetSocket(), (char*)&packet, sizeof(packet), 0);
+	if (retval == SOCKET_ERROR) {
+		err_display("SendWorldData()");
+		return false;
 	}
 
 	if (!SendAddPlayer())
