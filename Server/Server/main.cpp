@@ -32,11 +32,11 @@ void AcceptClient()
 	struct sockaddr_in clientAddr;
 	int addrlen = 0;
 	addrlen = sizeof(clientAddr);
+
 	while(1)
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		clients.insert({ cid ,SESSION(cid,sock) });
-		++cid;
 	}
 	
 
@@ -71,35 +71,31 @@ bool SendAddPlayer() {
 	return true;
 }
 
-
 bool SendWorldData()
 {
 	SC_WORLD_DATA WorldDataPacket;
-	SC_ADD_PLAYER AddPlayerPacket;
+	vector<SC_ADD_PLAYER> addPlayer;
 	int	retval{};
+	WorldDataPacket.player_count = clients.size();
 
-	for (auto& [id, session] : clients) {			// 플레이어 수 만큼 카운트해주고 접속해 있는 플레이어들 패킷에 담아주기
-		++WorldDataPacket.player_count;
-		AddPlayerPacket.client_id = id;
-		AddPlayerPacket.worldTransform = session.GetTransform();
-	}
-	
 	retval = send(clients[cid].GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
 		return false;
 	}
 
-	for (int i = 1; i != WorldDataPacket.player_count; i++)
-	{
-		retval = send(clients[cid].GetSocket(), (char*)&AddPlayerPacket, sizeof(AddPlayerPacket), 0);	// 기존 클라이언트 정보들 전송
-		if (retval == SOCKET_ERROR) {
+	for (auto& [id, session] : clients) {			// 플레이어 수 만큼 카운트해주고 접속해 있는 플레이어들 패킷에 담아주기
+		SC_ADD_PLAYER AddPlayerPacket;
+		AddPlayerPacket.client_id = id;
+		AddPlayerPacket.worldTransform = session.GetTransform();
+		addPlayer.push_back(AddPlayerPacket);
+	}
+	retval = send(clients[cid].GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
+	if (retval == SOCKET_ERROR) {
 			err_display("SendExistingClientsData()");
 			return false;
 		}
-	}
-
-
+	
 	return true;
 
 }
