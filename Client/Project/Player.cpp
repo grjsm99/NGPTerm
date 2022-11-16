@@ -36,7 +36,7 @@ bool Player::GetIsDead() const {
 	return isDead;
 }
 
-void Player::FireMissile(UINT& _mid, list<shared_ptr<GameObject>>& _pMissiles, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
+void Player::FireMissile(UINT& _mid, list<shared_ptr<Missile>>& _pMissiles, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	if (reloadTime > 0) return;
 	reloadTime = 0.1f;
 	shared_ptr<Missile> pMissile = make_shared<Missile>();

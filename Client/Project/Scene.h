@@ -44,7 +44,7 @@ private:
 	list<shared_ptr<Player>> pEnemys;
 
 	// 본인 및 적의 미사일까지 포함
-	list<shared_ptr<GameObject>> pMissiles;
+	list<shared_ptr<Missile>> pMissiles;
 
 	shared_ptr<GameObject> pWater;
 	

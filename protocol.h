@@ -18,7 +18,9 @@ using namespace DirectX;
 #pragma pack(push, 1)
 
 struct CS_MOVE_PLAYER { // type = 0
-	XMFLOAT4X4 worldTransform; // 플레이어의 이동 후 월드 행렬
+	char type = 0;
+	XMFLOAT3 localPosition; // 이동한 플레이어의 위치
+	XMFLOAT4 localRotation; // 이동한 플레이어의 회전값
 };
 
 struct CS_ADD_MISSILE { // type = 1
@@ -38,10 +40,9 @@ struct CS_REMOVE_PLAYER { // type = 3
 /////////////////////////////////////////////////////////
 
 
-struct SC_WORLD_DATA { // type = 0
+struct SC_WORLD_DATA { // type = 0	
 	char type = 0;
 	UCHAR player_count;  // 현재 월드 내의 플레이어 수
-	USHORT my_client_id; // 자신이 부여받을 클라이언트 id
 
 	// 이후 player_count값 만큼 SC_ADD_PLAYER를 보낸다.
 };

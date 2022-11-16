@@ -2,7 +2,6 @@
 #include "../../protocol.h"
 
 
-
 void AcceptClient()
 {
 	WSADATA wsa;
@@ -82,6 +81,7 @@ bool SendWorldData()
 	for (auto& [id, session] : clients) {
 		++packet.player_count;	
 	}
+	
 	retval = send(clients[cid].GetSocket(), (char*)&packet, sizeof(packet), 0);
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");

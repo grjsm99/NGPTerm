@@ -188,6 +188,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   ConnectToServer();
+
    InitializeCriticalSection(&missileCS);
    InitializeCriticalSection(&playerCS);
    GameFramework::Create(hInst, hWnd);
