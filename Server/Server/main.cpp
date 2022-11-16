@@ -74,22 +74,31 @@ bool SendAddPlayer() {
 
 bool SendWorldData()
 {
-	SC_WORLD_DATA packet;
+	SC_WORLD_DATA WorldDataPacket;
+	SC_ADD_PLAYER AddPlayerPacket;
 	int	retval{};
 
-	packet.my_client_id = cid;		
-	for (auto& [id, session] : clients) {
-		++packet.player_count;	
+	for (auto& [id, session] : clients) {			// 플레이어 수 만큼 카운트해주고 접속해 있는 플레이어들 패킷에 담아주기
+		++WorldDataPacket.player_count;
+		AddPlayerPacket.client_id = id;
+		AddPlayerPacket.worldTransform = session.GetTransform();
 	}
 	
-	retval = send(clients[cid].GetSocket(), (char*)&packet, sizeof(packet), 0);
+	retval = send(clients[cid].GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
 		return false;
 	}
 
-	if (!SendAddPlayer())
-		return false;
+	for (int i = 1; i != WorldDataPacket.player_count; i++)
+	{
+		retval = send(clients[cid].GetSocket(), (char*)&AddPlayerPacket, sizeof(AddPlayerPacket), 0);	// 기존 클라이언트 정보들 전송
+		if (retval == SOCKET_ERROR) {
+			err_display("SendExistingClientsData()");
+			return false;
+		}
+	}
+
 
 	return true;
 
