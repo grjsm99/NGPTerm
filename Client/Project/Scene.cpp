@@ -103,7 +103,8 @@ void PlayScene::ProcessKeyboardInput(const array<UCHAR, 256>& _keysBuffers, floa
 		pPlayer->MoveUpRigid(false, _timeElapsed);
 	}
 	if (_keysBuffers['P'] & 0xF0) {
-		pPlayer->FireMissile(missileCount, pMissiles, _pDevice, _pCommandList);
+		//pPlayer->FireMissile(missileCount, pMissiles, _pDevice, _pCommandList);
+		SendNewMissile();
 	}
 	//pPlayers[0]->ApplyTransform(transform, false);
 }
@@ -129,23 +130,42 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 			pEffect->Animate(_timeElapsed);
 		}
 	}
-
+	EnterCriticalSection(&missileCS);
 	for (auto& pMissile : pMissiles) {
 		pMissile->Animate(_timeElapsed);
 	}
-	
+	LeaveCriticalSection(&missileCS);
+
+	/* 적 플레이어의 이동은 들어온 패킷으로만 처리하기 때문에 Animate를 하지 않는다.
+
 	for (auto& pEnemy : pEnemys) {
 		pEnemy->Animate(_timeElapsed);
-	}
+	}*/
 	pWater->Animate(_timeElapsed);
 }
 
 void PlayScene::CheckCollision() {
-	
+
 	EnterCriticalSection(&missileCS);
+
+	// 미사일과 플레이어의 충돌체크
+	for (auto& pMissile : pMissiles) {
+		if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
+			pMissile->Remove();
+			playerHP = pPlayer->Hit(5.0f);
+			pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
+
+			shared_ptr<Effect> pEffect = make_shared<Effect>();
+			pEffect->Create(0.03, 8, 8, 50, 50, pMissile->GetLocalPosition(), "Explode_8x8");
+
+			pEffects.push_back(pEffect);
+			break;
+		}
+	}
 	pMissiles.remove_if([](const shared_ptr<GameObject>& _pMissile) {
 		return _pMissile->CheckRemove();
 		});
+
 	LeaveCriticalSection(&missileCS);
 
 
@@ -185,9 +205,7 @@ void PlayScene::UpdateLightShaderVariables(const ComPtr<ID3D12GraphicsCommandLis
 
 }
 
-void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
-
-	
+void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {	
 
 	GameFramework& gameFramework = GameFramework::Instance();
 	camera->SetViewPortAndScissorRect(_pCommandList);
@@ -219,13 +237,20 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	Mesh::GetShader()->PrepareRender(_pCommandList);
 	pPlayer->Render(_pCommandList);	
 	
+
+	EnterCriticalSection(&missileCS);
 	for (auto& pMissile : pMissiles) {
 		if (pMissile) pMissile->Render(_pCommandList);
 	}
+	LeaveCriticalSection(&missileCS);
+
+	
+	EnterCriticalSection(&playerCS);
 	for (auto& pEnemy : pEnemys) {
 		if (pEnemy) pEnemy->Render(_pCommandList);
 	}
-	
+	LeaveCriticalSection(&playerCS);
+
 	WaterMesh::GetShader()->PrepareRender(_pCommandList);
 	pWater->Render(_pCommandList);
 	
@@ -242,7 +267,10 @@ void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device
 {
 	shared_ptr<Player> pEnemy = make_shared<Player>();
 	pEnemy->Create("Gunship", _pDevice, _pCommandList);
-	pEnemy->SetLocalScale(XMFLOAT3(22,22,22));
+	//pEnemy->SetLocalScale(XMFLOAT3(22,22,22));
+
+	pEnemy->SetLocalPosition(_packet.localPosition);
+	pEnemy->SetLocalRotation(_packet.localRotation);
 	pEnemy->UpdateObject();
 	pEnemy->SetClientID(_packet.client_id);
 
@@ -263,36 +291,50 @@ void PlayScene::AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Dev
 
 void PlayScene::EnemyMove(const SC_MOVE_PLAYER& _packet)
 {
+	EnterCriticalSection(&playerCS);
 	auto target = find_if(pEnemys.begin(), pEnemys.end(), [_packet](const shared_ptr<Player>& _p) { return _p->GetClientID() == _packet.client_id; });
-
 	// 추후 각 플레이어마다 임계영역을 따로 만들어 설정해주도록 바꿀 예정
+	
 	// 받은 플레이어가 이미 죽은 상태면 패킷을 처리하지 않는다.
 	if (target != pEnemys.end()) {
-		EnterCriticalSection(&playerCS);
 		(*target)->SetLocalPosition(_packet.localPosition);
 		(*target)->SetLocalRotation(_packet.localRotation);
 		(*target)->UpdateObject();
-		LeaveCriticalSection(&playerCS);
 	}	
+	LeaveCriticalSection(&playerCS);
 }
 
 void PlayScene::RemoveMissile(const SC_REMOVE_MISSILE& _packet)
 {
+	EnterCriticalSection(&missileCS);
 	auto target = lower_bound(pMissiles.begin(), pMissiles.end(), _packet.missile_id, [](const shared_ptr<Missile>& _p, UINT _mid) { return _p->GetMissileID() < _mid; });
-	
 	// 그 미사일이 아직 남아있을 때 ( 미사일이 이미 시간이 지나 사라졌을 수 있다 )
 	if (target != pMissiles.end()) {
 		(*target)->CheckRemove();
 	}
+	LeaveCriticalSection(&missileCS);
 }
 
 void PlayScene::RemoveEnemy(const SC_REMOVE_PLAYER& _packet)
 {
+	EnterCriticalSection(&playerCS);
 	auto target = find_if(pEnemys.begin(), pEnemys.end(), [_packet](const shared_ptr<Player>& _p) { return _p->GetClientID() == _packet.client_id; });
 	(*target)->CheckRemove();
+	LeaveCriticalSection(&playerCS);
 }
 
-
+int PlayScene::SendNewMissile() {
+	//그 쓰레드 함수마다 cid가 있으므로  타입만 보내주면 된다.
+	int result;
+	CS_ADD_MISSILE packet;
+	packet.type = 1;
+	result = send(serverSock, (char*)&packet, sizeof(packet), 0);
+	if (result == SOCKET_ERROR) {
+		err_display("SendNewMissile()");
+		return -1;
+	}
+	return result;
+}
 
 shared_ptr<TerrainMap> PlayScene::GetTerrain() const {
 	return pTerrain;

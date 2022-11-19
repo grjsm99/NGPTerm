@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "../../protocol.h"
-
+bool SendAddMissile(USHORT _cid);
 bool SendAddPlayer(const SESSION& _Session);
 bool SendWorldData(const SESSION& _Session);
 
@@ -45,7 +45,6 @@ void AcceptClient()
 		++cid;
 
 	}
-	
 
 }
 
@@ -58,13 +57,36 @@ int main()
 	DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
 }
 
+// 특정 플레이어가 미사일을 발사 시 모든 플레이어에게 이사실을 전송한다.
+bool SendAddMissile(USHORT _cid) {
+	SC_ADD_MISSILE packet;
+	EnterCriticalSection(&clientsCS);
+
+	packet.missile_id = mid++;		// 0번부터 시작
+	packet.client_id = clients[_cid].GetID();
+	packet.position = clients[_cid].GetLocalPosition();
+	packet.rotation = clients[_cid].GetLocalRotation();
+	for (auto& [id, session] : clients) {
+		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
+		if (result == SOCKET_ERROR) {
+			err_display("SendAddPlayer()");
+			LeaveCriticalSection(&clientsCS);
+			return false;
+		}
+	}
+	LeaveCriticalSection(&clientsCS);
+	return true;
+}
+
+
 // 신규 유저에 대한 정보를 패킷에 담아 미리 접속해 있던 모든 플레이어에게 전송한다.
 bool SendAddPlayer(const SESSION& _Session) {
 	SC_ADD_PLAYER packet;
 	packet.client_id = _Session.GetID();	//신규 클라이언트의 아이디 적재
-	EnterCriticalSection(&clientsCS);
+
 	packet.localPosition = _Session.GetLocalPosition();	// 신규 클라이언트의 위치 적재
 	packet.localRotation = _Session.GetLocalRotation();	// 신규 클라이언트의 위치 적재
+	EnterCriticalSection(&clientsCS);
 	for (auto&[id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {

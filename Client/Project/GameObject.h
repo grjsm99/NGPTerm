@@ -201,7 +201,7 @@ public:
 	virtual void CopyObject(const GameObject& _other);
 
 	UINT GetMissileID() const { return missileId; };
-	USHORT GetCliendID() const { return clientId; };
+	USHORT GetClientID() const { return clientId; };
 	void Remove();
 };
 

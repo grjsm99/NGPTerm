@@ -86,6 +86,7 @@ public:
 	void RemoveMissile(const SC_REMOVE_MISSILE& _packet) final;
 	void RemoveEnemy(const SC_REMOVE_PLAYER& _packet) final;
 
+	int SendNewMissile();
 	shared_ptr<TerrainMap> GetTerrain() const;
 	virtual void LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	
