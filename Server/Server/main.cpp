@@ -1,60 +1,35 @@
 #include "stdafx.h"
 #include "../../protocol.h"
+
+void AcceptClient();
 bool SendAddMissile(USHORT _cid);
 bool SendAddPlayer(const SESSION& _Session);
 bool SendWorldData(const SESSION& _Session);
-
-void AcceptClient()
-{
-	WSADATA wsa;
-	SOCKET sock;
-	int retval{};
-
-	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		return;
-
-	SOCKET listenSock = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenSock == INVALID_SOCKET)
-		err_quit("socket()");
-
-	// bind()
-	struct sockaddr_in serveraddr;
-	memset(&serveraddr, 0, sizeof(serveraddr));
-	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serveraddr.sin_port = htons(SERVERPORT);		
-	retval = bind(listenSock, (struct sockaddr*) & serveraddr, sizeof(serveraddr));
-	if (retval == SOCKET_ERROR) err_quit("bind()");
-
-	// listen()
-	retval = listen(listenSock, SOMAXCONN);
-	if (retval == SOCKET_ERROR) err_quit("listen()");
+DWORD WINAPI ProcessIO(LPVOID _arg);
 
 
-	struct sockaddr_in clientAddr;
-	int addrlen = 0;
-	addrlen = sizeof(clientAddr);
-
-	while(1)
-	{
-		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
-		SESSION newSession(cid, sock);
-		SendWorldData(newSession);
-		SendAddPlayer(newSession);
-		clients.insert({ cid , newSession });
-		++cid;
-
-	}
-
-}
 
 int main()
 {
-	InitializeCriticalSection(&clientsCS);	// 임계영역 초기화
 
-	AcceptClient();
+	HANDLE						hThread;
+	while (1)
+	{
+		InitializeCriticalSection(&clientsCS);	// 임계영역 초기화
 
-	DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
+		AcceptClient();
+
+		// 스레드 생성
+		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), 0, NULL);
+		if (hThread == NULL) {
+			cout << cid << "socket is NULL" << endl;
+			closesocket(clients[cid].GetSocket());
+		}
+		else { CloseHandle(hThread); }
+
+		DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
+	}
+
 }
 
 // 특정 플레이어가 미사일을 발사 시 모든 플레이어에게 이사실을 전송한다.
@@ -127,5 +102,112 @@ bool SendWorldData(const SESSION& _Session)
 	}
 	
 	return true;
+
+}
+
+DWORD WINAPI ProcessIO(LPVOID _arg)
+{
+	int				 retval{};
+	char			 buffer[256];
+	char			 packetType{};
+	int				 packetSize[4] = { sizeof(CS_MOVE_PLAYER), sizeof(CS_ADD_MISSILE), sizeof(CS_REMOVE_MISSILE), sizeof(CS_REMOVE_PLAYER) };
+	char			 type{};
+	SOCKET			 client_sock = clients[(USHORT)_arg].GetSocket();
+	sockaddr_in		 clientAddr;
+	char			 addr[INET_ADDRSTRLEN];
+	int				 addrLen{};
+
+	// 클라이언트 정보 얻기
+	addrLen = sizeof(clientAddr);
+	getpeername(client_sock, (struct sockaddr*)&clientAddr, &addrLen);
+	inet_ntop(AF_INET, &clientAddr.sin_addr, addr, sizeof(addr));
+
+	while (1)
+	{
+		// 패킷타입 recv()
+		retval = recv(client_sock, (char*)&type, 1, 0);
+		if (retval == SOCKET_ERROR)
+		{
+			err_display("recv()");
+			return 0;
+		}
+
+		packetType = type;
+
+		// 받은 패킷의 사이즈만큼 recv()
+		retval = recv(client_sock, buffer, packetSize[packetType], 0);
+		if (retval == SOCKET_ERROR)
+		{
+			err_display("recv()");
+			return 0;
+		}
+
+		// 패킷 타입에 따른 메세지 처리하도록 제작
+		switch (packetType)
+		{
+		case 0:		// 플레이어 이동 정보 처리
+			//  SendMovePlayer();
+
+
+		case 1:		// 미사일 추가 정보 처리
+			cout << "recv()_1" << endl;
+			if (!SendAddMissile((USHORT)_arg))
+				return 0;
+			break;
+
+		case 2:		// 미사일 삭제 정보 처리
+			// SendRemoveMissile()
+			break;
+
+		case 3:		// 플레이어 삭제 정보 처리
+			// SendRemovePlayer()
+			break;
+
+		default:
+			cout << "잘못된 패킷타입" << endl;
+		}
+
+	}
+}
+void AcceptClient()
+{
+	WSADATA wsa;
+	SOCKET sock;
+	int retval{};
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return;
+
+	SOCKET listenSock = socket(AF_INET, SOCK_STREAM, 0);
+	if (listenSock == INVALID_SOCKET)
+		err_quit("socket()");
+
+	// bind()
+	struct sockaddr_in serveraddr;
+	memset(&serveraddr, 0, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serveraddr.sin_port = htons(SERVERPORT);
+	retval = bind(listenSock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+	if (retval == SOCKET_ERROR) err_quit("bind()");
+
+	// listen()
+	retval = listen(listenSock, SOMAXCONN);
+	if (retval == SOCKET_ERROR) err_quit("listen()");
+
+
+	struct sockaddr_in clientAddr;
+	int addrlen = 0;
+	addrlen = sizeof(clientAddr);
+
+
+		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
+		SESSION newSession(cid, sock);
+		SendWorldData(newSession);
+		SendAddPlayer(newSession);
+		clients.insert({ cid , newSession });
+		cout << "Accept client[" << cid << "]" << endl;
+		++cid;
+
 
 }
