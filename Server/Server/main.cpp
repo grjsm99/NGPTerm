@@ -4,6 +4,7 @@
 void AcceptClient();
 bool SendAddMissile(USHORT _cid);
 bool SendAddPlayer(const SESSION& _Session);
+bool SendRemovePlayer(USHORT _cid);
 bool SendWorldData(const SESSION& _Session);
 DWORD WINAPI ProcessIO(LPVOID _arg);
 
@@ -71,6 +72,26 @@ bool SendAddPlayer(const SESSION& _Session) {
 		}
 	}
 	LeaveCriticalSection(&clientsCS);
+	return true;
+}
+// 플레이어 정보를 없애고 다른 플레이어에게 삭제된 클라이언트의 ID를 패킷으로 보낸다.
+bool SendRemovePlayer(USHORT _cid) {
+
+	SC_REMOVE_PLAYER packet;
+	packet.client_id = _cid;
+
+	EnterCriticalSection(&clientsCS);
+	clients.erase(_cid);	// map에 있던 client를 삭제
+	for (auto& [id, session] : clients) {
+		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
+		if (result == SOCKET_ERROR) {
+			err_display("SendAddPlayer()");
+			LeaveCriticalSection(&clientsCS);
+			return false;
+		}
+	}
+	LeaveCriticalSection(&clientsCS);
+
 	return true;
 }
 

@@ -415,3 +415,14 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 void PlayScene::SetPlayerClientID(USHORT _cid) {
 	pPlayer->SetClientID(_cid);
 }
+
+// 플레이어가 죽었을때 불리는 함수, 서버에게 removePlayer패킷을 보낸다.
+bool PlayScene::SendPlayerRemove() {
+	CS_REMOVE_PLAYER removePlayerPacket;
+	int result = send(serverSock, (char*) &removePlayerPacket, sizeof(removePlayerPacket), 0);
+
+	if (result == SOCKET_ERROR) {
+		err_display("send()");
+		return result;
+	}
+}
