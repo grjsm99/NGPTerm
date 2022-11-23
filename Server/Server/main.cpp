@@ -12,24 +12,11 @@ DWORD WINAPI ProcessIO(LPVOID _arg);
 
 int main()
 {
+	InitializeCriticalSection(&clientsCS);	// 임계영역 초기화
 
-	HANDLE						hThread;
-	while (1)
-	{
-		InitializeCriticalSection(&clientsCS);	// 임계영역 초기화
+	AcceptClient();
 
-		AcceptClient();
-
-		// 스레드 생성
-		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), 0, NULL);
-		if (hThread == NULL) {
-			cout << cid << "socket is NULL" << endl;
-			closesocket(clients[cid].GetSocket());
-		}
-		else { CloseHandle(hThread); }
-
-		DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
-	}
+	DeleteCriticalSection(&clientsCS);	// 임계영역 삭제
 
 }
 
@@ -67,7 +54,7 @@ bool SendAddPlayer(const SESSION& _Session) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendAddPlayer()");
-			LeaveCriticalSection(&clientsCS);
+	 		LeaveCriticalSection(&clientsCS);
 			return false;
 		}
 	}
@@ -116,7 +103,9 @@ bool SendWorldData(const SESSION& _Session)
 		AddPlayerPacket.localRotation = session.GetLocalRotation();
 		addPlayer.push_back(AddPlayerPacket);
 	}
+
 	retval = send(_Session.GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
+
 	if (retval == SOCKET_ERROR) {
 		err_display("SendExistingClientsData()");
 		return false;
@@ -190,9 +179,11 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 
 	}
 }
+
 void AcceptClient()
 {
 	WSADATA wsa;
+	HANDLE hThread;
 	SOCKET sock;
 	int retval{};
 
@@ -221,7 +212,8 @@ void AcceptClient()
 	int addrlen = 0;
 	addrlen = sizeof(clientAddr);
 
-
+	while (1)
+	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
 		SendWorldData(newSession);
@@ -229,6 +221,12 @@ void AcceptClient()
 		clients.insert({ cid , newSession });
 		cout << "Accept client[" << cid << "]" << endl;
 		++cid;
-
-
+		// 스레드 생성
+		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), cid, NULL);
+		if (hThread == NULL) {
+			cout << cid << "socket is NULL" << endl;
+			closesocket(clients[cid].GetSocket());
+		}
+		else { CloseHandle(hThread); }
+	}
 }
