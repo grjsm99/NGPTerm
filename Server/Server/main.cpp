@@ -6,6 +6,7 @@ bool SendAddMissile(USHORT _cid);
 bool SendAddPlayer(const SESSION& _Session);
 bool SendRemovePlayer(USHORT _cid);
 bool SendWorldData(const SESSION& _Session);
+bool SendRemoveMissile(UINT _mid);
 DWORD WINAPI ProcessIO(LPVOID _arg);
 
 
@@ -81,6 +82,7 @@ bool SendRemovePlayer(USHORT _cid) {
 
 	return true;
 }
+
 
 // 신규 유저에게 미리 접속해 있던 플레이어들의 정보를 전부 보낸다.
 bool SendWorldData(const SESSION& _Session)
@@ -160,7 +162,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 
 
 		case 1:		// 미사일 추가 정보 처리
-			cout << "recv()_1" << endl;
+			cout << "Call SendAddMissile" << endl;
 			if (!SendAddMissile((USHORT)_arg))
 				return 0;
 			break;
@@ -220,7 +222,6 @@ void AcceptClient()
 		SendAddPlayer(newSession);
 		clients.insert({ cid , newSession });
 		cout << "Accept client[" << cid << "]" << endl;
-		++cid;
 		// 스레드 생성
 		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), cid, NULL);
 		if (hThread == NULL) {
@@ -228,5 +229,12 @@ void AcceptClient()
 			closesocket(clients[cid].GetSocket());
 		}
 		else { CloseHandle(hThread); }
+		++cid;
 	}
+}
+
+// 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
+bool SendRemoveMissile(UINT _mid)
+{
+
 }

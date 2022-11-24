@@ -92,4 +92,6 @@ public:
 	
 	void SetPlayerClientID(USHORT _cid);
 	bool SendPlayerRemove();
+	bool SendMissileRemove(UINT _missileId);
+	
 };

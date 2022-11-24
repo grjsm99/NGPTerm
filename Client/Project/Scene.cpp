@@ -147,12 +147,18 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 void PlayScene::CheckCollision() {
 
 	EnterCriticalSection(&missileCS);
+	
 
 	// 미사일과 플레이어의 충돌체크
 	for (auto& pMissile : pMissiles) {
 		if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
 			pMissile->Remove();
 			playerHP = pPlayer->Hit(5.0f);
+
+			// 제거할 미사일의 id를 서버로 보내준다.
+			if (!SendMissileRemove(pMissile->GetMissileID()))
+				cout << "SendMissileRemove_Error" << endl;
+
 			pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
 
 			shared_ptr<Effect> pEffect = make_shared<Effect>();
@@ -425,4 +431,19 @@ bool PlayScene::SendPlayerRemove() {
 		err_display("send()");
 		return result;
 	}
+}
+
+
+// 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
+bool PlayScene::SendMissileRemove(UINT _mid)
+{
+	CS_REMOVE_MISSILE packet;
+	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
+
+	if (retval == SOCKET_ERROR) {
+		err_display("send()");
+		return false;
+	}
+
+	return true;
 }
