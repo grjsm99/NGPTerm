@@ -33,7 +33,7 @@ bool SendAddMissile(USHORT _cid) {
 	for (auto& [id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
-			err_display("SendAddPlayer()");
+			err_display("SendAddMissile()");
 			LeaveCriticalSection(&clientsCS);
 			return false;
 		}
@@ -52,6 +52,7 @@ bool SendAddPlayer(const SESSION& _Session) {
 	packet.localRotation = _Session.GetLocalRotation();	// 신규 클라이언트의 위치 적재
 	EnterCriticalSection(&clientsCS);
 	for (auto&[id, session] : clients) {
+		cout << "id : " << id << ", session : " << session.GetSocket() << "\n";
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendAddPlayer()");
@@ -73,7 +74,7 @@ bool SendRemovePlayer(USHORT _cid) {
 	for (auto& [id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
-			err_display("SendAddPlayer()");
+			err_display("SendRemovePlayer()");
 			LeaveCriticalSection(&clientsCS);
 			return false;
 		}
@@ -218,12 +219,14 @@ void AcceptClient()
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
+		newSession.SetLocalPosition(XMFLOAT3(500, 200, 500));
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);
-		clients.insert({ cid , newSession });
+		clients.emplace(cid, newSession);
+		//clients.insert({ cid , newSession });
 		cout << "Accept client[" << cid << "]" << endl;
 		// 스레드 생성
-		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), cid, NULL);
+		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), 0, NULL);
 		if (hThread == NULL) {
 			cout << cid << "socket is NULL" << endl;
 			closesocket(clients[cid].GetSocket());
