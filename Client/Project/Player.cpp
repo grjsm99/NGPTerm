@@ -8,6 +8,7 @@ Player::Player() {
 	moveSpeed = 150.0f;
 	reloadTime = 0.0f;
 	clientId = 0;
+	isInvincible = true;
 }
 
 Player::~Player() {
@@ -16,7 +17,7 @@ Player::~Player() {
 
 void Player::Create(string _ObjectName, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	GameObject::Create(_ObjectName, _pDevice, _pCommandList);
-	
+	invincibleTime = 2.0f;
 	GameFramework& gameFramework = GameFramework::Instance();
 	
 	self = shared_from_this();
@@ -50,6 +51,11 @@ void Player::FireMissile(UINT& _mid, list<shared_ptr<Missile>>& _pMissiles, cons
 }
 
 void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
+	float isInv = 0;
+	if (isInvincible) {
+		isInv = 255;
+	}
+	_pCommandList->SetGraphicsRoot32BitConstants(6, 1, &isInv, 0);
 	GameObject::Render(_pCommandList);
 }
 
@@ -58,6 +64,12 @@ shared_ptr<Camera> Player::GetCamera() const {
 }
 
 void Player::Animate(double _timeElapsed) {
+	if (isInvincible) {
+		invincibleTime -= _timeElapsed;
+		if (invincibleTime < FLT_EPSILON) {
+			isInvincible = false;
+		}
+	}
 	if (isDead) return;
 	prevWorld = worldTransform;
 	

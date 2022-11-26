@@ -295,7 +295,7 @@ void GameFramework::CreateGraphicsRootSignature() {
 	pDescriptorRanges[1].RegisterSpace = 0;
 	pDescriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	
-	D3D12_ROOT_PARAMETER pRootParameters[6];
+	D3D12_ROOT_PARAMETER pRootParameters[7];
 
 	pRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	pRootParameters[0].Descriptor.ShaderRegister = 1; //Camera //shader.hlsl의 레지스터 번호 (예시 register(b1) )
@@ -328,7 +328,12 @@ void GameFramework::CreateGraphicsRootSignature() {
 	pRootParameters[5].DescriptorTable.pDescriptorRanges = &pDescriptorRanges[1];
 	pRootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	// texture Map
 	
-	
+	pRootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	pRootParameters[6].Constants.Num32BitValues = 1;
+	pRootParameters[6].Constants.ShaderRegister = 5; //GameObject
+	pRootParameters[6].Constants.RegisterSpace = 0;
+	pRootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 	// 정적 샘플러
 	D3D12_STATIC_SAMPLER_DESC samplerDesc[2];
 	::ZeroMemory(samplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC) * 2);
@@ -429,8 +434,6 @@ void GameFramework::FrameAdvance() {
 		// 씬의 오브젝트 충돌처리 [수정]
 	}
 
-
-	
 	// 명령 할당자와 명령 리스트를 리셋한다.
 	HRESULT hResult = pCommandAllocator->Reset();
 	

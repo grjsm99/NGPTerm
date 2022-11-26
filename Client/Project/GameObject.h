@@ -63,6 +63,7 @@ protected:
 	
 	vector<shared_ptr<Material>> materials;
 
+
 public:
 	friend RigidBody;
 	

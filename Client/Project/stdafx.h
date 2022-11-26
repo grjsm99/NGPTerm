@@ -117,6 +117,10 @@ void err_quit(const char* msg);
 void err_display(const char* msg);
 void err_display(int errcode);
 
+bool same(const XMFLOAT3& _left, const XMFLOAT3& _right);
+
+bool same(const XMFLOAT4& _left, const XMFLOAT4& _right);
+
 namespace Vector3 {
 	inline XMFLOAT3 Normalize(const XMFLOAT3& _vector) {
 		XMFLOAT3 result;

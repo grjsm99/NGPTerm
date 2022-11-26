@@ -34,6 +34,11 @@ class PlayScene : public Scene {
 private:
 
 	float playerHP;
+	
+	// 서버에 마지막으로 보낸 위치값을 저장
+	XMFLOAT3 prevPosition;
+	XMFLOAT4 prevRotation;
+
 	UINT missileCount;
 	float keybufferTime;
 	

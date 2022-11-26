@@ -25,6 +25,9 @@ PlayScene::PlayScene(int _stageNum) {
 	keybufferTime = 0;
 	playerHP = 100;
 	missileCount = 0;
+	// 서버에서의 초기값으로 바꾸어주자
+	prevPosition = XMFLOAT3(0, 0, 0);
+	prevRotation = XMFLOAT4(0, 0, 0, 1);
 }
 
 void PlayScene::Init(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
@@ -104,7 +107,10 @@ void PlayScene::ProcessKeyboardInput(const array<UCHAR, 256>& _keysBuffers, floa
 	}
 	if (_keysBuffers['P'] & 0xF0) {
 		//pPlayer->FireMissile(missileCount, pMissiles, _pDevice, _pCommandList);
-		SendNewMissile();
+		if (pPlayer->GetReloadTime() < 0) {
+			SendNewMissile();
+			pPlayer->SetReloadTime(0.1f);
+		}
 	}
 	//pPlayers[0]->ApplyTransform(transform, false);
 }
@@ -118,8 +124,9 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 	if (!pPlayer->GetIsDead()) {
 		pPlayer->Animate(_timeElapsed);
 		// 패킷 send
-		
 	}		
+	if(prevPosition.x != pPlayer->GetLocalPosition().x) 
+
 	for (auto& pLight : pLights) {
 		if (pLight) {
 			pLight->UpdateLight();
@@ -136,11 +143,11 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 	}
 	LeaveCriticalSection(&missileCS);
 
-	/* 적 플레이어의 이동은 들어온 패킷으로만 처리하기 때문에 Animate를 하지 않는다.
+	// 적 플레이어의 이동은 들어온 패킷으로만 처리하기 때문에 Animate를 하지 않는다.
 
 	for (auto& pEnemy : pEnemys) {
-		pEnemy->Animate(_timeElapsed);
-	}*/
+		pEnemy->SubInvisible(_timeElapsed);
+	}
 	pWater->Animate(_timeElapsed);
 }
 
@@ -148,24 +155,26 @@ void PlayScene::CheckCollision() {
 
 	EnterCriticalSection(&missileCS);
 	
+	
+	// 미사일과 플레이어의 충돌체크 (CheckCollideWithMissile)
+	if (pPlayer->GetIsInvisible()) {
+		for (auto& pMissile : pMissiles) {
+			if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
+				pMissile->Remove();
+				playerHP = pPlayer->Hit(5.0f);
 
-	// 미사일과 플레이어의 충돌체크
-	for (auto& pMissile : pMissiles) {
-		if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
-			pMissile->Remove();
-			playerHP = pPlayer->Hit(5.0f);
+				// 제거할 미사일의 id를 서버로 보내준다.
+				if (!SendMissileRemove(pMissile->GetMissileID()))
+					cout << "SendMissileRemove_Error" << endl;
 
-			// 제거할 미사일의 id를 서버로 보내준다.
-			if (!SendMissileRemove(pMissile->GetMissileID()))
-				cout << "SendMissileRemove_Error" << endl;
+				pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
 
-			pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
+				shared_ptr<Effect> pEffect = make_shared<Effect>();
+				pEffect->Create(0.03, 8, 8, 50, 50, pMissile->GetLocalPosition(), "Explode_8x8");
 
-			shared_ptr<Effect> pEffect = make_shared<Effect>();
-			pEffect->Create(0.03, 8, 8, 50, 50, pMissile->GetLocalPosition(), "Explode_8x8");
-
-			pEffects.push_back(pEffect);
-			break;
+				pEffects.push_back(pEffect);
+				break;
+			}
 		}
 	}
 	pMissiles.remove_if([](const shared_ptr<GameObject>& _pMissile) {

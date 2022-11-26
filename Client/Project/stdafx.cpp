@@ -293,3 +293,11 @@ void err_display(int errcode) {
 }
 
 
+bool same(const XMFLOAT3& _left, const XMFLOAT3& _right) {
+
+	return _left.x == _right.x && _left.y == _right.y && _left.z == _right.z;
+}
+
+bool same(const XMFLOAT4& _left, const XMFLOAT4& _right) {
+	return _left.x == _right.x && _left.y == _right.y && _left.z == _right.z && _left.w == _right.w;
+}

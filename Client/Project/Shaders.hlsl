@@ -8,6 +8,9 @@ cbuffer cbGameObjectInfo : register(b2) {
 	matrix worldTransform : packoffset(c0);
 };
 
+cbuffer inv : register(b5) {
+    float isinv: packoffset(c0);
+};
 
 
 #include "Light.hlsl"
@@ -69,6 +72,8 @@ float4 DefaultPixelShader(VS_OUTPUT input) : SV_TARGET {
     }
    float4 color = CalculateLight(cColor, input.positionW, input.normal);
     //color.g = input.uv.r;
+    if (isinv)
+        color.r += 0.5f;
    return color;
 }
 

@@ -12,7 +12,8 @@ private:
 	float reloadTime;
 
 	USHORT clientId;
-
+	bool isInvincible;
+	float invincibleTime;
 public:
 	Player();
 	~Player();
@@ -29,4 +30,11 @@ public:
 	USHORT GetClientID() const { return clientId; };
 	void Animate(double _timeElapsed);
 	float Hit(float _damage) { hp -= _damage; return hp; };
+
+	float GetReloadTime() const { return reloadTime; };
+	void SetReloadTime(float _reloadTime) { reloadTime = _reloadTime; };
+
+	float GetIsInvisible() const { return isInvincible; };
+	void SetInvisible(bool _isInvisible) { isInvincible = _isInvisible; };
+	void SubInvisible(float _timeElapsed) { invincibleTime -= _timeElapsed; };
 };

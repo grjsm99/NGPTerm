@@ -7,6 +7,7 @@ bool SendAddPlayer(const SESSION& _Session);
 bool SendRemovePlayer(USHORT _cid);
 bool SendWorldData(const SESSION& _Session);
 bool SendRemoveMissile(UINT _mid);
+bool SendMovePlayer(USHORT _cid, const CS_MOVE_PLAYER& _packet);	
 DWORD WINAPI ProcessIO(LPVOID _arg);
 
 
@@ -117,6 +118,28 @@ bool SendWorldData(const SESSION& _Session)
 	return true;
 
 }
+
+bool SendMovePlayer(USHORT _cid, const CS_MOVE_PLAYER& _packet)
+{
+	EnterCriticalSection(&clientsCS);
+
+	// clients 내 플레이어 위치 갱신
+	clients[_cid].SetLocalPosition(_packet.localPosition);
+	clients[_cid].SetLocalRotation(_packet.localRotation);
+
+	for (auto& [id, session] : clients) {
+		if (id == _cid) continue;
+		int result = send(session.GetSocket(), (char*)&_packet, sizeof(_packet), 0);
+		if (result == SOCKET_ERROR) {
+			err_display("SendMovePlayer()");
+			LeaveCriticalSection(&clientsCS);
+			return false;
+		}
+	}
+	LeaveCriticalSection(&clientsCS);
+	return true;
+}
+
 
 DWORD WINAPI ProcessIO(LPVOID _arg)
 {
@@ -241,3 +264,4 @@ bool SendRemoveMissile(UINT _mid)
 {
 
 }
+
