@@ -450,7 +450,7 @@ bool PlayScene::SendMissileRemove(UINT _mid)
 	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
 
 	if (retval == SOCKET_ERROR) {
-		err_display("send()");
+		err_display("Error SendMissileRemove()");
 		return false;
 	}
 
