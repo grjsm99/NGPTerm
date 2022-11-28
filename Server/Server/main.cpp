@@ -158,6 +158,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 	getpeername(client_sock, (struct sockaddr*)&clientAddr, &addrLen);
 	inet_ntop(AF_INET, &clientAddr.sin_addr, addr, sizeof(addr));
 
+	bool closeConnection = false;
 	while (1)
 	{
 		// 패킷타입 recv()
@@ -165,6 +166,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv()");
+			SendRemovePlayer((USHORT)_arg);
 			return 0;
 		}
 
@@ -175,6 +177,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv()");
+			SendRemovePlayer((USHORT)_arg);
 			return 0;
 		}
 
@@ -183,8 +186,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		{
 		case 0:		// 플레이어 이동 정보 처리
 			//  SendMovePlayer();
-
-
+			break;
 		case 1:		// 미사일 추가 정보 처리
 			cout << "Call SendAddMissile" << endl;
 			if (!SendAddMissile((USHORT)_arg))
@@ -196,13 +198,16 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			break;
 
 		case 3:		// 플레이어 삭제 정보 처리
-			// SendRemovePlayer()
+			SendRemovePlayer((USHORT)_arg);
+			closeConnection = true;
 			break;
 
 		default:
 			cout << "잘못된 패킷타입" << endl;
 		}
 
+		if (closeConnection)
+			break;
 	}
 }
 
@@ -273,4 +278,3 @@ bool SendRemoveMissile(UINT _mid)
 
 	return true;
 }
-

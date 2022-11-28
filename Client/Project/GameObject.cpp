@@ -469,19 +469,6 @@ void GameObject::CopyObject(const GameObject& _other) {
 	}
 }
 
-int GameObject::SendMovePlayer() {
-	CS_MOVE_PLAYER movePlayerPacket;
-	movePlayerPacket.localPosition = localPosition;
-	movePlayerPacket.localRotation = localRotation;
-	int result = send(serverSock, (char*)&movePlayerPacket, sizeof(CS_MOVE_PLAYER), 0);
-
-	if (result == SOCKET_ERROR) {
-		err_display("send()");
-		return result;
-	}
-	return result;
-}
-
 ////// GunshipObject , ApacheObject ////// 
 
 GunShipObject::GunShipObject() {

@@ -123,6 +123,10 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 	// 플레이어가 살아있는 경우 애니메이션을 수행
 	if (!pPlayer->GetIsDead()) {
 		pPlayer->Animate(_timeElapsed);
+		if (!same(prePlayerPosition, pPlayer->GetWorldPosition()) || !same(prePlayerRotation,pPlayer->GetLocalRotate())) {
+			pPlayer->SendPlayerMove();
+		}
+
 		// 패킷 send
 	}		
 	if(prevPosition.x != pPlayer->GetLocalPosition().x) 
@@ -162,6 +166,11 @@ void PlayScene::CheckCollision() {
 			if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
 				pMissile->Remove();
 				playerHP = pPlayer->Hit(5.0f);
+
+				if (playerHP <= 0) {
+					GameFramework::Instance().SetGameOver();	// 플레이어의 체력이 0이하가 될경우 게임루프를 빠져나온다.
+				}
+				
 
 				// 제거할 미사일의 id를 서버로 보내준다.
 				if (!SendMissileRemove(pMissile->GetMissileID()))
@@ -367,6 +376,9 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	pPlayer = make_shared<Player>();
 	pPlayer->Create("Gunship", _pDevice, _pCommandList);
 	pPlayer->UpdateObject();
+	prePlayerPosition = pPlayer->GetWorldPosition();
+	prePlayerRotation = pPlayer->GetLocalRotate();
+
 	shared_ptr<Light> baseLight = make_shared<Light>();
 	baseLight->lightType = 3;
 	baseLight->position = XMFLOAT3(0, 500, 0);
@@ -430,18 +442,6 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 void PlayScene::SetPlayerClientID(USHORT _cid) {
 	pPlayer->SetClientID(_cid);
 }
-
-// 플레이어가 죽었을때 불리는 함수, 서버에게 removePlayer패킷을 보낸다.
-bool PlayScene::SendPlayerRemove() {
-	CS_REMOVE_PLAYER removePlayerPacket;
-	int result = send(serverSock, (char*) &removePlayerPacket, sizeof(removePlayerPacket), 0);
-
-	if (result == SOCKET_ERROR) {
-		err_display("send()");
-		return result;
-	}
-}
-
 
 // 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
 bool PlayScene::SendMissileRemove(UINT _mid)

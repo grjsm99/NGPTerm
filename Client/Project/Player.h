@@ -37,4 +37,6 @@ public:
 	float GetIsInvisible() const { return isInvincible; };
 	void SetInvisible(bool _isInvisible) { isInvincible = _isInvisible; };
 	void SubInvisible(float _timeElapsed) { invincibleTime -= _timeElapsed; };
+
+	bool SendPlayerMove();
 };

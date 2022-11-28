@@ -74,6 +74,9 @@ private:
 	// 씬
 	stack<shared_ptr<Scene>> pScenes;
 
+	// Run
+	bool gameOver;
+
 // 생성, 소멸자
 private:
 	GameFramework();
@@ -126,4 +129,11 @@ public:
 	void EnemyMove(const SC_MOVE_PLAYER& _packet);
 	void RemoveMissile(const SC_REMOVE_MISSILE& _packet);
 	void RemoveEnemy(const SC_REMOVE_PLAYER& _packet);
+
+	void SetGameOver();
+	bool IsGameOver();
+
+	// 플레이어가 죽었을때 불리는 함수, 서버에게 removePlayer패킷을 보낸다.
+	bool SendPlayerRemove();
+
 };

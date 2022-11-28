@@ -77,10 +77,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
         else {
             GameFramework::Instance().FrameAdvance();
+            if (GameFramework::Instance().IsGameOver()) {
+                break;
+            }
         }
     }
     DeleteCriticalSection(&missileCS);
     DeleteCriticalSection(&playerCS);
+    GameFramework::Instance().SendPlayerRemove();
     GameFramework::Destroy();
 
     return (int) msg.wParam;

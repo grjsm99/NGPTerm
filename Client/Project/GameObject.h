@@ -153,9 +153,6 @@ public:
 	void UpdateHitboxShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	void LoadFromFile(ifstream& _file, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList, const shared_ptr<GameObject>& _coverObject);
 	virtual void CopyObject(const GameObject& _other);
-	
-	// 
-	int SendMovePlayer();
 
 };
 

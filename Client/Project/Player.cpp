@@ -117,3 +117,18 @@ void Player::Animate(double _timeElapsed) {
 	//InitVector();
 
 }
+
+bool Player::SendPlayerMove() {
+	CS_MOVE_PLAYER packet;
+	packet.localPosition = localPosition;
+	packet.localRotation = localRotation;
+
+	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
+
+	if (retval == SOCKET_ERROR) {
+		err_display("Error SendPlayerMove()");
+		return false;
+	}
+
+	return true;
+}

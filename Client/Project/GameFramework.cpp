@@ -52,6 +52,8 @@ void GameFramework::Create(HINSTANCE _hInstance, HWND _hMainWnd) {
 		// RecvWorldData();
 
 		gameFramework.gameTimer.Reset();    // 타이머 리셋
+
+		gameFramework.gameOver = false;
 	}
 
 }
@@ -655,3 +657,19 @@ void GameFramework::RemoveEnemy(const SC_REMOVE_PLAYER& _packet)
 	if (!pScenes.empty()) pScenes.top()->RemoveEnemy(_packet);
 }
 
+void GameFramework::SetGameOver() {
+	gameOver = true;
+}
+bool GameFramework::IsGameOver() {
+	return gameOver;
+}
+
+bool GameFramework::SendPlayerRemove() {
+	CS_REMOVE_PLAYER removePlayerPacket;
+	int result = send(serverSock, (char*)&removePlayerPacket, sizeof(removePlayerPacket), 0);
+
+	if (result == SOCKET_ERROR) {
+		err_display("send()");
+		return result;
+	}
+}

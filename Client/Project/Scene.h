@@ -66,9 +66,12 @@ private:
 	vector<shared_ptr<Light>> pLights;
 	shared_ptr<LightsMappedFormat> pMappedLights;
 	
-
 	XMFLOAT4 globalAmbient;
 	shared_ptr<Camera> camera;
+
+	XMFLOAT3 prePlayerPosition;
+	XMFLOAT4 prePlayerRotation;
+
 public:
 	PlayScene(int _stageNum);
 	~PlayScene() final;
@@ -96,7 +99,6 @@ public:
 	virtual void LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	
 	void SetPlayerClientID(USHORT _cid);
-	bool SendPlayerRemove();
 	bool SendMissileRemove(UINT _missileId);
-	
+
 };
