@@ -29,6 +29,7 @@ bool SendAddMissile(USHORT _cid) {
 
 	packet.missile_id = mid++;		// 0번부터 시작
 	packet.client_id = clients[_cid].GetID();
+	cout << "cid = " << packet.client_id << "\n";
 	packet.position = clients[_cid].GetLocalPosition();
 	packet.rotation = clients[_cid].GetLocalRotation();
 	for (auto& [id, session] : clients) {
@@ -53,7 +54,6 @@ bool SendAddPlayer(const SESSION& _Session) {
 	packet.localRotation = _Session.GetLocalRotation();	// 신규 클라이언트의 위치 적재
 	EnterCriticalSection(&clientsCS);
 	for (auto&[id, session] : clients) {
-		cout << "id : " << id << ", session : " << session.GetSocket() << "\n";
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendAddPlayer()");
@@ -97,7 +97,7 @@ bool SendWorldData(const SESSION& _Session)
 
 	EnterCriticalSection(&clientsCS);
 	WorldDataPacket.player_count = clients.size();
-		
+	WorldDataPacket.client_id = cid;
 	retval = send(_Session.GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
@@ -268,6 +268,8 @@ void AcceptClient()
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
+		DWORD optval = 1;
+		setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
 		newSession.SetLocalPosition(XMFLOAT3(500, 200, 500));
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);

@@ -29,7 +29,9 @@ void ConnectToServer()
 
     serverSock = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSock == INVALID_SOCKET) err_quit("socket()");
-
+    DWORD optval = 1;
+    setsockopt(serverSock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+   
     // connect()
     struct sockaddr_in serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));

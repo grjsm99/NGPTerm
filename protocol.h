@@ -43,6 +43,7 @@ struct CS_REMOVE_PLAYER { // type = 3
 struct SC_WORLD_DATA { // type = 0	
 	char type = 0;
 	UCHAR player_count;  // 현재 월드 내의 플레이어 수
+	USHORT client_id;	// 지금까지 접속한 클라이언트의 수
 
 	// 이후 player_count값 만큼 SC_ADD_PLAYER를 보낸다.
 };
