@@ -309,7 +309,9 @@ void GameObject::Animate(double _timeElapsed, const XMFLOAT3& _playerPos) {
 
 };
 void GameObject::Remove() {
+	
 };
+
 bool GameObject::CheckRemove() const {
 	return false;
 }

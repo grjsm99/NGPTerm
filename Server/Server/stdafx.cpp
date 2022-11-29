@@ -47,7 +47,6 @@ SESSION::SESSION(USHORT _id, SOCKET& _socket) {
 }
 
 SESSION::~SESSION() {
-
 }
 
 const SOCKET& SESSION::GetSocket() const {

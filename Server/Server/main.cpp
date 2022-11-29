@@ -72,6 +72,7 @@ bool SendRemovePlayer(USHORT _cid) {
 	packet.client_id = _cid;
 
 	EnterCriticalSection(&clientsCS);
+	closesocket(clients[_cid].GetSocket());
 	clients.erase(_cid);	// map에 있던 client를 삭제
 	for (auto& [id, session] : clients) {
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
@@ -93,11 +94,14 @@ bool SendWorldData(const SESSION& _Session)
 	SC_WORLD_DATA WorldDataPacket;
 	vector<SC_ADD_PLAYER> addPlayer;
 	int	retval{};
-	WorldDataPacket.player_count = clients.size();
 
+	EnterCriticalSection(&clientsCS);
+	WorldDataPacket.player_count = clients.size();
+		
 	retval = send(_Session.GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
+		LeaveCriticalSection(&clientsCS);
 		return false;
 	}
 
@@ -107,16 +111,17 @@ bool SendWorldData(const SESSION& _Session)
 		AddPlayerPacket.localPosition = session.GetLocalPosition();
 		AddPlayerPacket.localRotation = session.GetLocalRotation();
 		addPlayer.push_back(AddPlayerPacket);
-		cout << AddPlayerPacket.localPosition.x << " , "<< AddPlayerPacket.localPosition.y << " , " << AddPlayerPacket.localPosition.z << "\n";
 	}
 
 	retval = send(_Session.GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
+	
 
 	if (retval == SOCKET_ERROR) {
 		err_display("SendExistingClientsData()");
+		LeaveCriticalSection(&clientsCS);
 		return false;
 	}
-	
+	LeaveCriticalSection(&clientsCS);
 	return true;
 
 }
@@ -193,32 +198,29 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		{
 		case 0:		// 플레이어 이동 정보 처리
 		{
-			cout << "Call SendMovePlayer()" << endl;
 			CS_MOVE_PLAYER* packet0 = reinterpret_cast<CS_MOVE_PLAYER*>(buffer);
 			if (!SendMovePlayer((USHORT)_arg, *packet0))
 				return 0;
 			break;
 		}
 		case 1:		// 미사일 추가 정보 처리
-			cout << "Call SendAddMissile" << endl;
 			if (!SendAddMissile((USHORT)_arg))
 				return 0;
 			break;
 
 		case 2:		// 미사일 삭제 정보 처리
 		{
-			cout << "Call SendRemoveMissile()" << endl;
 			CS_REMOVE_MISSILE* packet2 = reinterpret_cast<CS_REMOVE_MISSILE*>(buffer);
-			if (SendRemoveMissile((USHORT)packet2->missile_id))
+			if (!SendRemoveMissile((USHORT)packet2->missile_id))
 				return 0;
 			break;
 
 		}
 
 		case 3:		// 플레이어 삭제 정보 처리
-			cout << "Call SendRemovePlayer()" << endl;
 			if (!SendRemovePlayer((USHORT)_arg))
 				return 0;
+			
 			break;
 
 		default:

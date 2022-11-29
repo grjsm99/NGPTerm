@@ -193,8 +193,8 @@ void PlayScene::CheckCollision() {
 
 
 	EnterCriticalSection(&playerCS);
-	pEnemys.remove_if([](const shared_ptr<GameObject>& pEnemy) {
-		return pEnemy->CheckRemove();
+	pEnemys.remove_if([](const shared_ptr<Player>& pEnemy) {
+		return pEnemy->GetIsDead();
 		});
 	LeaveCriticalSection(&playerCS);
 
@@ -335,10 +335,9 @@ void PlayScene::RemoveMissile(const SC_REMOVE_MISSILE& _packet)
 	auto target = lower_bound(pMissiles.begin(), pMissiles.end(), _packet.missile_id, [](const shared_ptr<Missile>& _p, UINT _mid) { return _p->GetMissileID() < _mid; });
 	// 그 미사일이 아직 남아있을 때 ( 미사일이 이미 시간이 지나 사라졌을 수 있다 )
 	if (target != pMissiles.end()) {
-		(*target)->CheckRemove();
-
+		(*target)->Remove();
 		pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
-
+		
 		shared_ptr<Effect> pEffect = make_shared<Effect>();
 		pEffect->Create(0.03, 8, 8, 50, 50, (*target)->GetLocalPosition(), "Explode_8x8");
 
@@ -351,7 +350,7 @@ void PlayScene::RemoveEnemy(const SC_REMOVE_PLAYER& _packet)
 {
 	EnterCriticalSection(&playerCS);
 	auto target = find_if(pEnemys.begin(), pEnemys.end(), [_packet](const shared_ptr<Player>& _p) { return _p->GetClientID() == _packet.client_id; });
-	(*target)->CheckRemove();
+	(*target)->SetIsDead();
 	LeaveCriticalSection(&playerCS);
 }
 

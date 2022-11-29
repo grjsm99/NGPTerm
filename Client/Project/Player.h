@@ -22,7 +22,7 @@ public:
 public:
 	void Create(string _ObjectName, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	bool GetIsDead() const;
-
+	void SetIsDead() { isDead = true; };
 	void FireMissile(UINT& _mid, list<shared_ptr<Missile>>& _pMissiles, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 	shared_ptr<Camera> GetCamera() const;
