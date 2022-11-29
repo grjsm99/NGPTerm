@@ -163,17 +163,14 @@ void PlayScene::CheckCollision() {
 	
 	
 	// 미사일과 플레이어의 충돌체크 (CheckCollideWithMissile)
-	if (pPlayer->GetIsInvisible()) {
+	if (!pPlayer->GetIsInvisible()) {
 		for (auto& pMissile : pMissiles) {
 			if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
 				pMissile->Remove();
 				playerHP = pPlayer->Hit(5.0f);
-
 				if (playerHP <= 0) {
 					GameFramework::Instance().SetGameOver();	// 플레이어의 체력이 0이하가 될경우 게임루프를 빠져나온다.
 				}
-				
-
 				// 제거할 미사일의 id를 서버로 보내준다.
 				if (!SendMissileRemove(pMissile->GetMissileID()))
 					cout << "SendMissileRemove_Error" << endl;
@@ -202,9 +199,9 @@ void PlayScene::CheckCollision() {
 	LeaveCriticalSection(&playerCS);
 
 
-	//pEffects.remove_if([](const shared_ptr<Effect>& pEffect) {
-	//	return pEffect->CheckRemove();
-	//	});
+	pEffects.remove_if([](const shared_ptr<Effect>& pEffect) {
+		return pEffect->CheckRemove();
+		});
 }
 
 void PlayScene::UpdateShaderVariables(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
@@ -303,7 +300,6 @@ void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr
 
 	EnterCriticalSection(&playerCS);
 	pEnemys.push_back(pEnemy);
-	cout << pEnemys.size() << "개\n";
 	LeaveCriticalSection(&playerCS);
 
 }
@@ -340,6 +336,13 @@ void PlayScene::RemoveMissile(const SC_REMOVE_MISSILE& _packet)
 	// 그 미사일이 아직 남아있을 때 ( 미사일이 이미 시간이 지나 사라졌을 수 있다 )
 	if (target != pMissiles.end()) {
 		(*target)->CheckRemove();
+
+		pUIs["2DUI_hp"]->SetSizeUV(XMFLOAT2(playerHP / 100.0f, 1.0f));
+
+		shared_ptr<Effect> pEffect = make_shared<Effect>();
+		pEffect->Create(0.03, 8, 8, 50, 50, (*target)->GetLocalPosition(), "Explode_8x8");
+
+		pEffects.push_back(pEffect);
 	}
 	LeaveCriticalSection(&missileCS);
 }
@@ -451,8 +454,9 @@ void PlayScene::SetPlayerClientID(USHORT _cid) {
 
 // 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
 bool PlayScene::SendMissileRemove(UINT _mid)
-{
+{	
 	CS_REMOVE_MISSILE packet;
+	packet.missile_id = _mid;
 	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
 
 	if (retval == SOCKET_ERROR) {

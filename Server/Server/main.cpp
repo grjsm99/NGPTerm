@@ -286,14 +286,19 @@ void AcceptClient()
 // 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
 bool SendRemoveMissile(UINT _mid)
 {
+	EnterCriticalSection(&clientsCS);
 	SC_REMOVE_MISSILE packet;
 	packet.missile_id = _mid;
-	int retval = send(clients[_mid].GetSocket(), (char*)&packet, sizeof(packet), 0);
 
-	if (retval == SOCKET_ERROR) {
-		err_display("SendRemoveMissile()");
-		return false;
+	for (auto& [id, session] : clients) {
+		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
+		if (result == SOCKET_ERROR) {
+			err_display("SendMovePlayer()");
+			LeaveCriticalSection(&clientsCS);
+			return false;
+		}
 	}
 
+	LeaveCriticalSection(&clientsCS);
 	return true;
 }
