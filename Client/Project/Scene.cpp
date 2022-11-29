@@ -382,6 +382,7 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	
 	pPlayer = make_shared<Player>();
 	pPlayer->Create("Gunship", _pDevice, _pCommandList);
+	pPlayer->SetLocalScale(XMFLOAT3(2.0f, 2.0f, 2.0f));
 	pPlayer->UpdateObject();
 	pPlayer->SetPlayer();
 	prePlayerPosition = pPlayer->GetWorldPosition();

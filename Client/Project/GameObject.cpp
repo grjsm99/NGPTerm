@@ -569,7 +569,7 @@ void Missile::Create(USHORT _cid, UINT _mid, XMFLOAT3 _position, XMFLOAT4 _rotat
 	name = "Missile";
 	GameObject::Create("Missile", _pDevice, _pCommandList);
 	self = shared_from_this();
-	SetLocalScale(XMFLOAT3(3,3,3));
+	SetLocalScale(XMFLOAT3(9,9,9));
 	
 	//SetChild(gameFramework.GetGameObjectManager().GetGameObject(, _pDevice, _pCommandList));
 	moveSpeed = 0.0f;
