@@ -185,7 +185,10 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		switch (packetType)
 		{
 		case 0:		// 플레이어 이동 정보 처리
-			//  SendMovePlayer();
+			cout << "Call SendRemoceMissile()" << endl;
+			CS_MOVE_PLAYER* packet0 = reinterpret_cast<CS_MOVE_PLAYER*>(buffer);
+			if (!SendMovePlayer((USHORT)_arg, *packet0));
+				return 0;
 			break;
 		case 1:		// 미사일 추가 정보 처리
 			cout << "Call SendAddMissile" << endl;
@@ -194,12 +197,17 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			break;
 
 		case 2:		// 미사일 삭제 정보 처리
-			// SendRemoveMissile()
+			cout << "Call SendRemoceMissile()" << endl;
+			CS_REMOVE_MISSILE* packet2 = reinterpret_cast<CS_REMOVE_MISSILE*>(buffer);
+			if (SendRemoveMissile((USHORT)packet2->missile_id))
+				return 0;
 			break;
 
+
 		case 3:		// 플레이어 삭제 정보 처리
-			SendRemovePlayer((USHORT)_arg);
-			closeConnection = true;
+			cout << "Call SendRemovePlayer()" << endl;
+			if (!SendRemovePlayer((USHORT)_arg))
+				return 0;
 			break;
 
 		default:
