@@ -419,7 +419,7 @@ const shared_ptr<Scene>& GameFramework::GetCurrentScene() const {
 
 void GameFramework::FrameAdvance() {
 
-	gameTimer.Tick(.0f);
+	gameTimer.Tick(60.0f);
 	
 	if (pScenes.empty()) {
 		// 최초씬 생성
@@ -621,8 +621,8 @@ void GameFramework::RecvWorldData() {
 		if (!pScenes.empty()) {
 			// 타 플레이어 생성
 			for (auto& addPlayerPacket : addPlayerPackets) {
-				cout << "타 플레이어 추가\n";
-				AddEnemy(addPlayerPacket);
+				cout << "타 플레이어 추가. " << addPlayerPacket.localPosition << " , " << addPlayerPacket.localRotation << "\n";
+				AddEnemy(addPlayerPacket, false);
 				
 			}
 			// 나의 clientID Set
@@ -635,8 +635,8 @@ void GameFramework::RecvWorldData() {
 
 //////////////////////
 
-void GameFramework::AddEnemy(const SC_ADD_PLAYER& _packet) {
-	if (!pScenes.empty()) pScenes.top()->AddEnemy(_packet, pDevice, pCommandList);
+void GameFramework::AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew) {
+	if (!pScenes.empty()) pScenes.top()->AddEnemy(_packet, _isNew, pDevice, pCommandList);
 }
 
 void GameFramework::AddMissile(const SC_ADD_MISSILE& _packet) {

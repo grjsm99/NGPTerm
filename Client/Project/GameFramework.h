@@ -124,7 +124,7 @@ public:
 	void RecvWorldData();
 
 	// 서버에서 받은 패킷으로 현재 씬에 적용
-	void AddEnemy(const SC_ADD_PLAYER& _packet);
+	void AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew);
 	void AddMissile(const SC_ADD_MISSILE& _packet);
 	void EnemyMove(const SC_MOVE_PLAYER& _packet);
 	void RemoveMissile(const SC_REMOVE_MISSILE& _packet);

@@ -3,12 +3,14 @@
 #include "GameFramework.h"
 
 Player::Player() {
+	isPlayer = false;
 	hp = 100.0f;
 	isDead = false;
 	moveSpeed = 150.0f;
 	reloadTime = 0.0f;
 	clientId = 0;
 	isInvincible = true;
+	invincibleTime = 2.0f;
 }
 
 Player::~Player() {
@@ -64,12 +66,14 @@ shared_ptr<Camera> Player::GetCamera() const {
 }
 
 void Player::Animate(double _timeElapsed) {
+
 	if (isInvincible) {
 		invincibleTime -= _timeElapsed;
 		if (invincibleTime < FLT_EPSILON) {
 			isInvincible = false;
 		}
 	}
+	//if (!isPlayer) return;
 	if (isDead) return;
 	prevWorld = worldTransform;
 	
@@ -122,7 +126,7 @@ bool Player::SendPlayerMove() {
 	CS_MOVE_PLAYER packet;
 	packet.localPosition = localPosition;
 	packet.localRotation = localRotation;
-
+	cout << localPosition << " , " << localRotation << "\n";
 	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
 
 	if (retval == SOCKET_ERROR) {

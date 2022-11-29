@@ -63,6 +63,7 @@ bool SendAddPlayer(const SESSION& _Session) {
 	}
 	LeaveCriticalSection(&clientsCS);
 	return true;
+	
 }
 // 플레이어 정보를 없애고 다른 플레이어에게 삭제된 클라이언트의 ID를 패킷으로 보낸다.
 bool SendRemovePlayer(USHORT _cid) {
@@ -106,6 +107,7 @@ bool SendWorldData(const SESSION& _Session)
 		AddPlayerPacket.localPosition = session.GetLocalPosition();
 		AddPlayerPacket.localRotation = session.GetLocalRotation();
 		addPlayer.push_back(AddPlayerPacket);
+		cout << AddPlayerPacket.localPosition.x << " , "<< AddPlayerPacket.localPosition.y << " , " << AddPlayerPacket.localPosition.z << "\n";
 	}
 
 	retval = send(_Session.GetSocket(), (char*)addPlayer.data(), sizeof(SC_ADD_PLAYER)* addPlayer.size(), 0);	// 기존 클라이언트 정보들 전송
@@ -121,15 +123,20 @@ bool SendWorldData(const SESSION& _Session)
 
 bool SendMovePlayer(USHORT _cid, const CS_MOVE_PLAYER& _packet)
 {
+	SC_MOVE_PLAYER packet;
 	EnterCriticalSection(&clientsCS);
 
 	// clients 내 플레이어 위치 갱신
 	clients[_cid].SetLocalPosition(_packet.localPosition);
 	clients[_cid].SetLocalRotation(_packet.localRotation);
 
+	packet.client_id = _cid;
+	packet.localPosition = _packet.localPosition;
+	packet.localRotation = _packet.localRotation;
+	
 	for (auto& [id, session] : clients) {
 		if (id == _cid) continue;
-		int result = send(session.GetSocket(), (char*)&_packet, sizeof(_packet), 0);
+		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendMovePlayer()");
 			LeaveCriticalSection(&clientsCS);
@@ -162,7 +169,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 	while (1)
 	{
 		// 패킷타입 recv()
-		retval = recv(client_sock, (char*)&type, 1, 0);
+		retval = recv(client_sock, buffer, 1, 0);
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv()");
@@ -170,10 +177,10 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			return 0;
 		}
 
-		packetType = type;
+		packetType = buffer[0];
 
 		// 받은 패킷의 사이즈만큼 recv()
-		retval = recv(client_sock, buffer, packetSize[packetType], 0);
+		retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv()");
@@ -185,11 +192,13 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		switch (packetType)
 		{
 		case 0:		// 플레이어 이동 정보 처리
-			cout << "Call SendRemoceMissile()" << endl;
+		{
+			cout << "Call SendMovePlayer()" << endl;
 			CS_MOVE_PLAYER* packet0 = reinterpret_cast<CS_MOVE_PLAYER*>(buffer);
-			if (!SendMovePlayer((USHORT)_arg, *packet0));
+			if (!SendMovePlayer((USHORT)_arg, *packet0))
 				return 0;
 			break;
+		}
 		case 1:		// 미사일 추가 정보 처리
 			cout << "Call SendAddMissile" << endl;
 			if (!SendAddMissile((USHORT)_arg))
@@ -197,12 +206,14 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			break;
 
 		case 2:		// 미사일 삭제 정보 처리
-			cout << "Call SendRemoceMissile()" << endl;
+		{
+			cout << "Call SendRemoveMissile()" << endl;
 			CS_REMOVE_MISSILE* packet2 = reinterpret_cast<CS_REMOVE_MISSILE*>(buffer);
 			if (SendRemoveMissile((USHORT)packet2->missile_id))
 				return 0;
 			break;
 
+		}
 
 		case 3:		// 플레이어 삭제 정보 처리
 			cout << "Call SendRemovePlayer()" << endl;

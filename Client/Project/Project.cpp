@@ -119,14 +119,14 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
 
         if (packetType == 1) {
             SC_ADD_PLAYER* packet = reinterpret_cast<SC_ADD_PLAYER*>(buffer);
-            gameFramework.AddEnemy(*packet);
+            gameFramework.AddEnemy(*packet, true);
         }
         if (packetType == 2) {
             SC_ADD_MISSILE* packet = reinterpret_cast<SC_ADD_MISSILE*>(buffer);
             gameFramework.AddMissile(*packet);
         }
         if (packetType == 3) {
-            SC_MOVE_PLAYER* packet = reinterpret_cast<SC_MOVE_PLAYER*>(buffer);
+            SC_MOVE_PLAYER* packet = reinterpret_cast<SC_MOVE_PLAYER*>(buffer); 
             gameFramework.EnemyMove(*packet);
         }
         if (packetType == 4) {

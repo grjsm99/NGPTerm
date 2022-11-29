@@ -6,6 +6,7 @@
 class Player : public GameObject, public RigidBody {
 private:
 	// 플레이어가 죽은지를 판단
+	bool isPlayer;
 	float hp;
 	bool isDead;
 	weak_ptr<Camera> pCamera;
@@ -34,6 +35,7 @@ public:
 	float GetReloadTime() const { return reloadTime; };
 	void SetReloadTime(float _reloadTime) { reloadTime = _reloadTime; };
 
+	void SetPlayer() { isPlayer = true; };
 	float GetIsInvisible() const { return isInvincible; };
 	void SetInvisible(bool _isInvisible) { isInvincible = _isInvisible; };
 	void SubInvisible(float _timeElapsed) { invincibleTime -= _timeElapsed; };

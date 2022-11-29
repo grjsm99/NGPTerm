@@ -20,7 +20,7 @@ public:
 	virtual void CheckCollision();
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
 	
-	virtual void AddEnemy(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
+	virtual void AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
 	virtual void AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) = 0;
 	virtual void EnemyMove(const SC_MOVE_PLAYER& _packet) = 0;
 	virtual void RemoveMissile(const SC_REMOVE_MISSILE& _packet) = 0;
@@ -88,7 +88,7 @@ public:
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 
 	void AddLight(const shared_ptr<Light>& _pLight);
-	void AddEnemy(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
+	void AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 	void AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) final;
 	void EnemyMove(const SC_MOVE_PLAYER& _packet) final;
 	void RemoveMissile(const SC_REMOVE_MISSILE& _packet) final;

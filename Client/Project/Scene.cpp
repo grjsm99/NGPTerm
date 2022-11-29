@@ -125,11 +125,12 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 		pPlayer->Animate(_timeElapsed);
 		if (!same(prePlayerPosition, pPlayer->GetWorldPosition()) || !same(prePlayerRotation,pPlayer->GetLocalRotate())) {
 			pPlayer->SendPlayerMove();
+			prePlayerPosition = pPlayer->GetWorldPosition();
+			prePlayerRotation = pPlayer->GetLocalRotate();
+			
 		}
-
 		// 패킷 send
 	}		
-	if(prevPosition.x != pPlayer->GetLocalPosition().x) 
 
 	for (auto& pLight : pLights) {
 		if (pLight) {
@@ -141,16 +142,17 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 			pEffect->Animate(_timeElapsed);
 		}
 	}
+	
 	EnterCriticalSection(&missileCS);
 	for (auto& pMissile : pMissiles) {
 		pMissile->Animate(_timeElapsed);
 	}
 	LeaveCriticalSection(&missileCS);
 
-	// 적 플레이어의 이동은 들어온 패킷으로만 처리하기 때문에 Animate를 하지 않는다.
-
+	
 	for (auto& pEnemy : pEnemys) {
 		pEnemy->SubInvisible(_timeElapsed);
+		pEnemy->Animate(_timeElapsed);
 	}
 	pWater->Animate(_timeElapsed);
 }
@@ -287,10 +289,11 @@ void PlayScene::AddLight(const shared_ptr<Light>& _pLight) {
 	pLights.push_back(_pLight);
 }
 
-void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList)
+void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList)
 {
 	shared_ptr<Player> pEnemy = make_shared<Player>();
 	pEnemy->Create("Gunship", _pDevice, _pCommandList);
+	pEnemy->SetInvisible(_isNew);
 	//pEnemy->SetLocalScale(XMFLOAT3(22,22,22));
 
 	pEnemy->SetLocalPosition(_packet.localPosition);
@@ -300,7 +303,9 @@ void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, const ComPtr<ID3D12Device
 
 	EnterCriticalSection(&playerCS);
 	pEnemys.push_back(pEnemy);
+	cout << pEnemys.size() << "개\n";
 	LeaveCriticalSection(&playerCS);
+
 }
 
 void PlayScene::AddMissile(const SC_ADD_MISSILE& _packet, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList)
@@ -376,6 +381,7 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	pPlayer = make_shared<Player>();
 	pPlayer->Create("Gunship", _pDevice, _pCommandList);
 	pPlayer->UpdateObject();
+	pPlayer->SetPlayer();
 	prePlayerPosition = pPlayer->GetWorldPosition();
 	prePlayerRotation = pPlayer->GetLocalRotate();
 
