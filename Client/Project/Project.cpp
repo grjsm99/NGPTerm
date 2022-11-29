@@ -113,10 +113,12 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
 
         packetType = buffer[0];
         // 해당 패킷의 크기만큼 recv
-        retval = recv(serverSock, buffer + 1, packSize[packetType], 0);
-        if (retval == SOCKET_ERROR) {
-            err_display("send()");
-            return retval;
+        if (packSize[packetType] > 0) {
+            retval = recv(serverSock, buffer + 1, packSize[packetType], 0);
+            if (retval == SOCKET_ERROR) {
+                err_display("send()");
+                return retval;
+            }
         }
 
         if (packetType == 1) {

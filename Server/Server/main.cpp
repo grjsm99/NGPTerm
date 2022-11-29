@@ -185,14 +185,16 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		packetType = buffer[0];
 
 		// 받은 패킷의 사이즈만큼 recv()
-		retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
-		if (retval == SOCKET_ERROR)
-		{
-			err_display("recv()");
-			SendRemovePlayer((USHORT)_arg);
-			return 0;
-		}
+		if (packetSize[packetType] - 1 > 0) {
+			retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
+			if (retval == SOCKET_ERROR)
+			{
+				err_display("recv()");
+				SendRemovePlayer((USHORT)_arg);
+				return 0;
+			}
 
+		}
 		// 패킷 타입에 따른 메세지 처리하도록 제작
 		switch (packetType)
 		{
