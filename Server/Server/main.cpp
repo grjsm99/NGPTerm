@@ -270,8 +270,8 @@ void AcceptClient()
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
-		DWORD optval = 1;
-		setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+		//DWORD optval = 1;
+		//setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
 		newSession.SetLocalPosition(XMFLOAT3(500, 200, 500));
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);
