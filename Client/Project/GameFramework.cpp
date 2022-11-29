@@ -568,7 +568,7 @@ void GameFramework::ProcessInput() {
 		if (keysBuffers['F'] & 0xF0) {
 			//ChangeSwapChainState();
 		}
-		// 일시정지
+		// 일시정지`
 		if (keysBuffers['P'] & 0xF0) {
 			//PushScene(make_shared<Scene>("pause"));
 		}

@@ -29,7 +29,6 @@ bool SendAddMissile(USHORT _cid) {
 
 	packet.missile_id = mid++;		// 0번부터 시작
 	packet.client_id = clients[_cid].GetID();
-	cout << "cid = " << packet.client_id << "\n";
 	packet.position = clients[_cid].GetLocalPosition();
 	packet.rotation = clients[_cid].GetLocalRotation();
 	for (auto& [id, session] : clients) {
@@ -177,7 +176,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		retval = recv(client_sock, buffer, 1, 0);
 		if (retval == SOCKET_ERROR)
 		{
-			err_display("recv()");
+			err_display("recv() 1");
 			SendRemovePlayer((USHORT)_arg);
 			return 0;
 		}
@@ -189,7 +188,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
 			if (retval == SOCKET_ERROR)
 			{
-				err_display("recv()");
+				err_display("recv() 2");
 				SendRemovePlayer((USHORT)_arg);
 				return 0;
 			}
@@ -220,13 +219,12 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		}
 
 		case 3:		// 플레이어 삭제 정보 처리
-			if (!SendRemovePlayer((USHORT)_arg))
-				return 0;
-			
+			SendRemovePlayer((USHORT)_arg);
+			return 0;
 			break;
 
 		default:
-			cout << "잘못된 패킷타입" << endl;
+			cout << "잘못된 패킷타입 = " << (int)packetType << endl;
 		}
 
 		if (closeConnection)

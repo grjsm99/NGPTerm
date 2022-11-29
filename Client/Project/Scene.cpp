@@ -260,7 +260,9 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	Mesh::GetShader()->PrepareRender(_pCommandList);
 	pPlayer->Render(_pCommandList);	
 	
-
+	float isinv = 0;
+	_pCommandList->SetGraphicsRoot32BitConstants(6, 1, &isinv, 0);
+	
 	EnterCriticalSection(&missileCS);
 	for (auto& pMissile : pMissiles) {
 		if (pMissile) pMissile->Render(_pCommandList);
