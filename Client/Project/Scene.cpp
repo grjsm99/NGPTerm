@@ -86,7 +86,7 @@ void PlayScene::ProcessKeyboardInput(const array<UCHAR, 256>& _keysBuffers, floa
 	if (_keysBuffers['4'] & 0xF0) {
 		pPlayer->RotateRigid(pPlayer->GetLocalRightVector(), -90.0f, _timeElapsed);
 	}
-	// 
+	
 	if (_keysBuffers['W'] & 0xF0) {
 		pPlayer->MoveFrontRigid(true, _timeElapsed);
 	}
@@ -166,7 +166,7 @@ void PlayScene::CheckCollision() {
 	if (!pPlayer->GetIsInvisible()) {
 		for (auto& pMissile : pMissiles) {
 			if (pMissile->GetClientID() != pPlayer->GetClientID() && pMissile->GetObj()->GetBoundingBox().Contains(pPlayer->GetObj()->GetBoundingBox())) {
-				pMissile->Remove();
+				pMissile->Remove(); 
 				playerHP = pPlayer->Hit(5.0f);
 				if (playerHP <= 0) {
 					GameFramework::Instance().SetGameOver();	// 플레이어의 체력이 0이하가 될경우 게임루프를 빠져나온다.
@@ -260,7 +260,9 @@ void PlayScene::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	Mesh::GetShader()->PrepareRender(_pCommandList);
 	pPlayer->Render(_pCommandList);	
 	
-
+	float isinv = 0;
+	_pCommandList->SetGraphicsRoot32BitConstants(6, 1, &isinv, 0);
+	
 	EnterCriticalSection(&missileCS);
 	for (auto& pMissile : pMissiles) {
 		if (pMissile) pMissile->Render(_pCommandList);
@@ -382,6 +384,7 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	
 	pPlayer = make_shared<Player>();
 	pPlayer->Create("Gunship", _pDevice, _pCommandList);
+	pPlayer->SetLocalScale(XMFLOAT3(2.0f, 2.0f, 2.0f));
 	pPlayer->UpdateObject();
 	pPlayer->SetPlayer();
 	prePlayerPosition = pPlayer->GetWorldPosition();
@@ -449,6 +452,8 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 
 void PlayScene::SetPlayerClientID(USHORT _cid) {
 	pPlayer->SetClientID(_cid);
+	cout << pPlayer->GetClientID() << "로 설정\n";
+
 }
 
 // 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다

@@ -53,7 +53,6 @@ bool SendAddPlayer(const SESSION& _Session) {
 	packet.localRotation = _Session.GetLocalRotation();	// 신규 클라이언트의 위치 적재
 	EnterCriticalSection(&clientsCS);
 	for (auto&[id, session] : clients) {
-		cout << "id : " << id << ", session : " << session.GetSocket() << "\n";
 		int result = send(session.GetSocket(), (char*)&packet, sizeof(packet), 0);
 		if (result == SOCKET_ERROR) {
 			err_display("SendAddPlayer()");
@@ -97,7 +96,7 @@ bool SendWorldData(const SESSION& _Session)
 
 	EnterCriticalSection(&clientsCS);
 	WorldDataPacket.player_count = clients.size();
-		
+	WorldDataPacket.client_id = cid;
 	retval = send(_Session.GetSocket(), (char*)&WorldDataPacket, sizeof(WorldDataPacket), 0);	// 현재 월드 정보 전송
 	if (retval == SOCKET_ERROR) {
 		err_display("SendWorldData()");
@@ -177,7 +176,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		retval = recv(client_sock, buffer, 1, 0);
 		if (retval == SOCKET_ERROR)
 		{
-			err_display("recv()");
+			err_display("recv() 1");
 			SendRemovePlayer((USHORT)_arg);
 			return 0;
 		}
@@ -185,14 +184,16 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		packetType = buffer[0];
 
 		// 받은 패킷의 사이즈만큼 recv()
-		retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
-		if (retval == SOCKET_ERROR)
-		{
-			err_display("recv()");
-			SendRemovePlayer((USHORT)_arg);
-			return 0;
-		}
+		if (packetSize[packetType] - 1 > 0) {
+			retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
+			if (retval == SOCKET_ERROR)
+			{
+				err_display("recv() 2");
+				SendRemovePlayer((USHORT)_arg);
+				return 0;
+			}
 
+		}
 		// 패킷 타입에 따른 메세지 처리하도록 제작
 		switch (packetType)
 		{
@@ -218,13 +219,12 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		}
 
 		case 3:		// 플레이어 삭제 정보 처리
-			if (!SendRemovePlayer((USHORT)_arg))
-				return 0;
-			
+			SendRemovePlayer((USHORT)_arg);
+			return 0;
 			break;
 
 		default:
-			cout << "잘못된 패킷타입" << endl;
+			cout << "잘못된 패킷타입 = " << (int)packetType << endl;
 		}
 
 		if (closeConnection)
@@ -268,6 +268,8 @@ void AcceptClient()
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
+		//DWORD optval = 1;
+		//setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
 		newSession.SetLocalPosition(XMFLOAT3(500, 200, 500));
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);

@@ -58,6 +58,7 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 		isInv = 255;
 	}
 	_pCommandList->SetGraphicsRoot32BitConstants(6, 1, &isInv, 0);
+
 	GameObject::Render(_pCommandList);
 }
 

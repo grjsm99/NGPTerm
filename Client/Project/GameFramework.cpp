@@ -568,7 +568,7 @@ void GameFramework::ProcessInput() {
 		if (keysBuffers['F'] & 0xF0) {
 			//ChangeSwapChainState();
 		}
-		// 일시정지
+		// 일시정지`
 		if (keysBuffers['P'] & 0xF0) {
 			//PushScene(make_shared<Scene>("pause"));
 		}
@@ -616,21 +616,20 @@ void GameFramework::RecvWorldData() {
 		result = recv(serverSock, (char*)addPlayerPackets.data(), sizeof(SC_ADD_PLAYER) * addPlayerPackets.size(), MSG_WAITALL);
 		if (result == SOCKET_ERROR)
 			err_display("recv()");
-
 		// 씬이 비어있지 않을 경우
 		if (!pScenes.empty()) {
 			// 타 플레이어 생성
 			for (auto& addPlayerPacket : addPlayerPackets) {
 				cout << "타 플레이어 추가. " << addPlayerPacket.localPosition << " , " << addPlayerPacket.localRotation << "\n";
-				AddEnemy(addPlayerPacket, false);
-				
-			}
-			// 나의 clientID Set
-			static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.player_count);
+				AddEnemy(addPlayerPacket, false);	
+			}		
 		}
-
 	}
-	cout << "my ClientID : " << (int)worldDataPacket.player_count << endl;
+	// 나의 clientID Set
+	if (!pScenes.empty()) {
+		static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.client_id);
+	}
+	cout << "my ClientID : " << (int)worldDataPacket.client_id << endl;
 }
 
 //////////////////////
