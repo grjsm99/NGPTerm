@@ -297,6 +297,7 @@ void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr
 
 	pEnemy->SetLocalPosition(_packet.localPosition);
 	pEnemy->SetLocalRotation(_packet.localRotation);
+	pPlayer->SetLocalScale(XMFLOAT3(3.0f, 3.0f, 3.0f));
 	pEnemy->UpdateObject();
 	pEnemy->SetClientID(_packet.client_id);
 
@@ -384,7 +385,7 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 	
 	pPlayer = make_shared<Player>();
 	pPlayer->Create("Gunship", _pDevice, _pCommandList);
-	pPlayer->SetLocalScale(XMFLOAT3(6.0f, 6.0f, 6.0f));
+	pPlayer->SetLocalScale(XMFLOAT3(3.0f, 3.0f, 3.0f));
 	pPlayer->UpdateObject();
 	pPlayer->SetPlayer();
 	prePlayerPosition = pPlayer->GetWorldPosition();
