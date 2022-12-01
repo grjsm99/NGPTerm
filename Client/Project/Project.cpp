@@ -29,8 +29,8 @@ void ConnectToServer()
 
     serverSock = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSock == INVALID_SOCKET) err_quit("socket()");
-   // DWORD optval = 1;
-   // setsockopt(serverSock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+    //DWORD optval = 1;
+    //setsockopt(serverSock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
    
     // connect()
     struct sockaddr_in serveraddr;
@@ -105,7 +105,7 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
     while (true)
     {
         // 1바이트를 받아 패킷 타입 알아내기
-        retval = recv(serverSock, buffer, 1, 0);
+        retval = recv(serverSock, buffer, 1, MSG_WAITALL);
         if (retval == SOCKET_ERROR) {
             err_display("send()");
             return retval;
@@ -114,7 +114,7 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
         packetType = buffer[0];
         // 해당 패킷의 크기만큼 recv
         if (packSize[packetType] > 0) {
-            retval = recv(serverSock, buffer + 1, packSize[packetType], 0);
+            retval = recv(serverSock, buffer + 1, packSize[packetType], MSG_WAITALL);
             if (retval == SOCKET_ERROR) {
                 err_display("send()");
                 return retval;

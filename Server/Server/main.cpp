@@ -173,7 +173,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 	while (1)
 	{
 		// 패킷타입 recv()
-		retval = recv(client_sock, buffer, 1, 0);
+		retval = recv(client_sock, buffer, 1, MSG_WAITALL);
 		if (retval == SOCKET_ERROR)
 		{
 			err_display("recv() 1");
@@ -185,7 +185,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 
 		// 받은 패킷의 사이즈만큼 recv()
 		if (packetSize[packetType] - 1 > 0) {
-			retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, 0);
+			retval = recv(client_sock, buffer + 1, packetSize[packetType] - 1, MSG_WAITALL);
 			if (retval == SOCKET_ERROR)
 			{
 				err_display("recv() 2");
@@ -224,7 +224,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 			break;
 
 		default:
-			cout << "잘못된 패킷타입 = " << (int)packetType << endl;
+			cout << "잘못된 패킷타입 = " << (USHORT)_arg << " , " << (int)packetType << endl;
 		}
 
 		if (closeConnection)
@@ -268,8 +268,7 @@ void AcceptClient()
 	{
 		sock = accept(listenSock, (struct sockaddr*)&clientAddr, &addrlen);
 		SESSION newSession(cid, sock);
-		//DWORD optval = 1;
-		//setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+		
 		newSession.SetLocalPosition(XMFLOAT3(500, 200, 500));
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);

@@ -127,7 +127,6 @@ bool Player::SendPlayerMove() {
 	CS_MOVE_PLAYER packet;
 	packet.localPosition = localPosition;
 	packet.localRotation = localRotation;
-	cout << localPosition << " , " << localRotation << "\n";
 	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
 
 	if (retval == SOCKET_ERROR) {
