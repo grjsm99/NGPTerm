@@ -457,7 +457,7 @@ void PlayScene::SetPlayerClientID(USHORT _cid) {
 }
 
 // 특정 클라이언트가 어떤 미사일과 충돌 시 충돌된 missile id를 모두에게 Send 후 모두 성공 시 true를 반환한다
-bool PlayScene::SendMissileRemove(UINT _mid)
+int PlayScene::SendMissileRemove(UINT _mid)
 {	
 	CS_REMOVE_MISSILE packet;
 	packet.missile_id = _mid;
@@ -465,8 +465,8 @@ bool PlayScene::SendMissileRemove(UINT _mid)
 
 	if (retval == SOCKET_ERROR) {
 		err_display("Error SendMissileRemove()");
-		return false;
+		return -1;
 	}
 
-	return true;
+	return retval;
 }

@@ -123,7 +123,7 @@ void Player::Animate(double _timeElapsed) {
 
 }
 
-bool Player::SendPlayerMove() {
+int Player::SendPlayerMove() {
 	CS_MOVE_PLAYER packet;
 	packet.localPosition = localPosition;
 	packet.localRotation = localRotation;
@@ -131,8 +131,8 @@ bool Player::SendPlayerMove() {
 
 	if (retval == SOCKET_ERROR) {
 		err_display("Error SendPlayerMove()");
-		return false;
+		return -1;
 	}
 
-	return true;
+	return retval;
 }

@@ -663,7 +663,7 @@ bool GameFramework::IsGameOver() {
 	return gameOver;
 }
 
-bool GameFramework::SendPlayerRemove() {
+int GameFramework::SendPlayerRemove() {
 	CS_REMOVE_PLAYER removePlayerPacket;
 	int result = send(serverSock, (char*)&removePlayerPacket, sizeof(removePlayerPacket), 0);
 
