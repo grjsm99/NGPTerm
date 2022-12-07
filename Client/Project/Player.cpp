@@ -19,7 +19,7 @@ Player::~Player() {
 
 void Player::Create(string _ObjectName, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	GameObject::Create(_ObjectName, _pDevice, _pCommandList);
-	invincibleTime = 2.0f;
+
 	GameFramework& gameFramework = GameFramework::Instance();
 	
 	self = shared_from_this();

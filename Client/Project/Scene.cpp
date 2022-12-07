@@ -151,7 +151,6 @@ void PlayScene::AnimateObjects(double _timeElapsed, const ComPtr<ID3D12Device>& 
 
 	
 	for (auto& pEnemy : pEnemys) {
-		pEnemy->SubInvisible(_timeElapsed);
 		pEnemy->Animate(_timeElapsed);
 	}
 	pWater->Animate(_timeElapsed);
@@ -297,7 +296,7 @@ void PlayScene::AddEnemy(const SC_ADD_PLAYER& _packet, bool _isNew, const ComPtr
 
 	pEnemy->SetLocalPosition(_packet.localPosition);
 	pEnemy->SetLocalRotation(_packet.localRotation);
-	pPlayer->SetLocalScale(XMFLOAT3(3.0f, 3.0f, 3.0f));
+	pEnemy->SetLocalScale(XMFLOAT3(3.0f, 3.0f, 3.0f));
 	pEnemy->UpdateObject();
 	pEnemy->SetClientID(_packet.client_id);
 

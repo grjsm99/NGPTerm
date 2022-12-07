@@ -158,7 +158,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 	char			 buffer[256];
 	char			 packetType{};
 	int				 packetSize[4] = { sizeof(CS_MOVE_PLAYER), sizeof(CS_ADD_MISSILE), sizeof(CS_REMOVE_MISSILE), sizeof(CS_REMOVE_PLAYER) };
-	char			 type{};
+
 	SOCKET			 client_sock = clients[(USHORT)_arg].GetSocket();
 	sockaddr_in		 clientAddr;
 	char			 addr[INET_ADDRSTRLEN];
@@ -168,8 +168,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 	addrLen = sizeof(clientAddr);
 	getpeername(client_sock, (struct sockaddr*)&clientAddr, &addrLen);
 	inet_ntop(AF_INET, &clientAddr.sin_addr, addr, sizeof(addr));
-
-	bool closeConnection = false;
+	
 	while (1)
 	{
 		// 패킷타입 recv()
@@ -226,9 +225,7 @@ DWORD WINAPI ProcessIO(LPVOID _arg)
 		default:
 			cout << "잘못된 패킷타입 = " << (USHORT)_arg << " , " << (int)packetType << endl;
 		}
-
-		if (closeConnection)
-			break;
+		
 	}
 }
 
@@ -273,7 +270,7 @@ void AcceptClient()
 		SendWorldData(newSession);
 		SendAddPlayer(newSession);
 		clients.emplace(cid, newSession);
-		//clients.insert({ cid , newSession });
+		
 		cout << "Accept client[" << cid << "]" << endl;
 		// 스레드 생성
 		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), 0, NULL);
@@ -282,6 +279,7 @@ void AcceptClient()
 			closesocket(clients[cid].GetSocket());
 		}
 		else { CloseHandle(hThread); }
+		
 		++cid;
 	}
 }
