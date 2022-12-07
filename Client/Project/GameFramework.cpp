@@ -620,7 +620,7 @@ void GameFramework::RecvWorldData() {
 		if (!pScenes.empty()) {
 			// 타 플레이어 생성
 			for (auto& addPlayerPacket : addPlayerPackets) {
-				cout << "타 플레이어 추가. " << addPlayerPacket.localPosition << " , " << addPlayerPacket.localRotation << "\n";
+				
 				AddEnemy(addPlayerPacket, false);	
 			}		
 		}
@@ -629,7 +629,6 @@ void GameFramework::RecvWorldData() {
 	if (!pScenes.empty()) {
 		static_pointer_cast<PlayScene>(pScenes.top())->SetPlayerClientID(worldDataPacket.client_id);
 	}
-	cout << "my ClientID : " << (int)worldDataPacket.client_id << endl;
 }
 
 //////////////////////

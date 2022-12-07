@@ -271,7 +271,6 @@ void AcceptClient()
 		SendAddPlayer(newSession);
 		clients.emplace(cid, newSession);
 		
-		cout << "Accept client[" << cid << "]" << endl;
 		// 스레드 생성
 		hThread = CreateThread(NULL, 0, ProcessIO, (LPVOID)clients[cid].GetID(), 0, NULL);
 		if (hThread == NULL) {

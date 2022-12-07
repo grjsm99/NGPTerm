@@ -452,7 +452,6 @@ void PlayScene::LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3
 
 void PlayScene::SetPlayerClientID(USHORT _cid) {
 	pPlayer->SetClientID(_cid);
-	cout << pPlayer->GetClientID() << "·Î ¼³Á¤\n";
 
 }
 

@@ -13,6 +13,7 @@ mt19937 gen;
 SOCKET serverSock;
 CRITICAL_SECTION missileCS;
 CRITICAL_SECTION playerCS;
+// 서버 아이피 수정
 char* SERVERIP = (char*)"127.0.0.1";
 
 float random(float min, float max) {
