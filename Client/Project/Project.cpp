@@ -29,8 +29,8 @@ void ConnectToServer()
 
     serverSock = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSock == INVALID_SOCKET) err_quit("socket()");
-    //DWORD optval = 1;
-    //setsockopt(serverSock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
+    DWORD optval = 1;
+    setsockopt(serverSock, IPPROTO_TCP, TCP_NODELAY, (const char*)&optval, sizeof(optval));
    
     // connect()
     struct sockaddr_in serveraddr;
@@ -101,13 +101,15 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
     char* buffer = new char[128];
     size_t packSize[] = { 0, sizeof(SC_ADD_PLAYER) - 1, sizeof(SC_ADD_MISSILE) - 1, sizeof(SC_MOVE_PLAYER) - 1, sizeof(SC_REMOVE_MISSILE) - 1, sizeof(SC_REMOVE_PLAYER) - 1 };
     //gameFramework.AddEnemy(asd);
+    
     gameFramework.RecvWorldData();
     while (true)
     {
         // 1바이트를 받아 패킷 타입 알아내기
         retval = recv(serverSock, buffer, 1, MSG_WAITALL);
         if (retval == SOCKET_ERROR) {
-            err_display("send()");
+            err_display("recv()");
+            GameFramework::Instance().SetGameOver();
             return retval;
         }
 
@@ -116,7 +118,7 @@ DWORD WINAPI ProcessRecv(LPVOID _curScene)
         if (packSize[packetType] > 0) {
             retval = recv(serverSock, buffer + 1, packSize[packetType], MSG_WAITALL);
             if (retval == SOCKET_ERROR) {
-                err_display("send()");
+                err_display("recv()");
                 return retval;
             }
         }
