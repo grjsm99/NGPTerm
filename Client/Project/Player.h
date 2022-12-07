@@ -40,5 +40,5 @@ public:
 	void SetInvisible(bool _isInvisible) { isInvincible = _isInvisible; };
 	void SubInvisible(float _timeElapsed) { invincibleTime -= _timeElapsed; };
 
-	bool SendPlayerMove();
+	int SendPlayerMove();
 };

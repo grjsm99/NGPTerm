@@ -134,6 +134,6 @@ public:
 	bool IsGameOver();
 
 	// 플레이어가 죽었을때 불리는 함수, 서버에게 removePlayer패킷을 보낸다.
-	bool SendPlayerRemove();
+	int SendPlayerRemove();
 
 };

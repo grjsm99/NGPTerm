@@ -99,6 +99,6 @@ public:
 	virtual void LoadStage(const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList);
 	
 	void SetPlayerClientID(USHORT _cid);
-	bool SendMissileRemove(UINT _missileId);
+	int SendMissileRemove(UINT _missileId);
 
 };

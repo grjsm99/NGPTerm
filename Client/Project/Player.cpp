@@ -19,7 +19,7 @@ Player::~Player() {
 
 void Player::Create(string _ObjectName, const ComPtr<ID3D12Device>& _pDevice, const ComPtr<ID3D12GraphicsCommandList>& _pCommandList) {
 	GameObject::Create(_ObjectName, _pDevice, _pCommandList);
-	invincibleTime = 2.0f;
+
 	GameFramework& gameFramework = GameFramework::Instance();
 	
 	self = shared_from_this();
@@ -123,17 +123,16 @@ void Player::Animate(double _timeElapsed) {
 
 }
 
-bool Player::SendPlayerMove() {
+int Player::SendPlayerMove() {
 	CS_MOVE_PLAYER packet;
 	packet.localPosition = localPosition;
 	packet.localRotation = localRotation;
-	cout << localPosition << " , " << localRotation << "\n";
 	int retval = send(serverSock, (char*)&packet, sizeof(packet), 0);
 
 	if (retval == SOCKET_ERROR) {
 		err_display("Error SendPlayerMove()");
-		return false;
+		return -1;
 	}
 
-	return true;
+	return retval;
 }
